@@ -1013,18 +1013,245 @@
       .layout { grid-template-columns: minmax(0, 1fr); }
       .rightbar { position: static; height: auto; grid-column: 1 / -1; }
       .hero, .split-3, .editor-shell { grid-template-columns: 1fr; }
-      .grid-metrics, .part-grid, .sim-grid, .db-grid, .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .grid-metrics, .part-grid, .sim-grid, .db-grid, .project-grid, .solution-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .ai-main-layout, .ai-content { grid-template-columns: 1fr; }
     }
     @media (max-width: 960px) {
-      .topbar, .layout, .mall-toolbar, .split-2, .grid-metrics, .part-grid, .sim-grid, .db-grid, .project-grid { grid-template-columns: 1fr; }
+      .topbar {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+          "logo user"
+          "search search"
+          "nav nav";
+        gap: 12px;
+        padding: 14px;
+      }
+      .logo-wrap {
+        min-width: 0;
+      }
+      .logo-copy strong {
+        font-size: 18px;
+        white-space: normal;
+      }
+      .logo-copy span {
+        display: block;
+        line-height: 1.45;
+      }
+      .search-global {
+        padding: 10px 14px;
+      }
+      .top-nav {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+      }
+      .top-nav::-webkit-scrollbar {
+        display: none;
+      }
+      .top-nav-btn {
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+      .user-dropdown {
+        min-width: min(220px, calc(100vw - 28px));
+      }
+      .layout, .mall-toolbar, .split-2, .grid-metrics, .part-grid, .sim-grid, .db-grid, .project-grid, .solution-grid, .ai-main-layout, .ai-content {
+        grid-template-columns: 1fr;
+      }
       .rightbar { position: static; height: auto; }
       .editor-shell { min-height: auto; }
+      .editor-pane {
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .editor-pane:last-child {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
       .canvas-stage { grid-template-rows: auto minmax(360px, 360px) auto; }
       .db-shell, .db-card-grid { grid-template-columns: 1fr; }
       .db-sidebar { position: static; }
       .resource-card { gap: 14px; min-height: 124px; }
       .resource-thumb { height: 100%; aspect-ratio: 1 / 1; }
       .layout { padding: 14px; }
+      .hero-card, .panel, .metric-card, .part-card, .editor-shell, .sim-card, .right-section, .project-card, .modal-card {
+        border-radius: 20px;
+      }
+      .hero-card, .panel, .sim-card, .project-card {
+        padding: 16px;
+      }
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .split-2.solution-main,
+      .split-3 {
+        grid-template-columns: 1fr;
+      }
+      .row,
+      .summary-row,
+      .toolbar,
+      .sim-actions,
+      .chips {
+        flex-wrap: wrap;
+      }
+      .toolbar .btn,
+      .sim-actions .field,
+      .sim-actions .btn {
+        flex: 1 1 100%;
+        width: 100%;
+        min-width: 0;
+      }
+      .field-row {
+        align-items: stretch;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .field-label {
+        width: auto;
+      }
+      .ai-actions {
+        flex-direction: column;
+      }
+      .ai-actions .btn {
+        width: 100%;
+      }
+      .bar-chart {
+        height: 180px;
+      }
+      .resource-card h3 {
+        font-size: 16px;
+      }
+      .resource-body .sub {
+        -webkit-line-clamp: 3;
+        line-clamp: 3;
+      }
+      table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      .info-row {
+        grid-template-columns: 1fr;
+      }
+    }
+    @media (max-width: 768px) {
+      body {
+        font-size: 14px;
+      }
+      h1 {
+        font-size: 28px;
+      }
+      h2 {
+        font-size: 22px;
+      }
+      .topbar {
+        padding: 12px;
+      }
+      .logo-badge {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+      }
+      .logo-copy strong {
+        font-size: 16px;
+      }
+      .top-actions {
+        gap: 8px;
+      }
+      .layout {
+        gap: 14px;
+        padding: 12px;
+      }
+      .grid-metrics,
+      .part-grid,
+      .sim-grid,
+      .db-grid,
+      .project-grid,
+      .solution-grid,
+      .db-card-grid {
+        gap: 12px;
+      }
+      .part-card {
+        padding: 14px;
+      }
+      .part-visual.large {
+        height: 180px;
+      }
+      .canvas-stage {
+        padding: 14px;
+        grid-template-rows: auto minmax(320px, 320px) auto;
+      }
+      .fake-canvas svg {
+        border-radius: 18px;
+      }
+      .db-sidebar {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding: 10px;
+      }
+      .db-nav-btn {
+        width: auto;
+        margin-bottom: 0;
+        flex: 0 0 auto;
+        white-space: nowrap;
+      }
+      .resource-card {
+        padding: 14px;
+        min-height: 112px;
+      }
+      .resource-thumb {
+        width: 88px;
+      }
+      .modal {
+        padding: 12px;
+      }
+      .modal-card {
+        padding: 16px;
+      }
+    }
+    @media (max-width: 560px) {
+      .hero-card:first-child {
+        min-height: 0;
+      }
+      .hero-card:first-child .cta-row .btn,
+      .toolbar .btn,
+      .btn {
+        min-width: 0;
+      }
+      .grid-metrics,
+      .part-grid,
+      .solution-grid,
+      .sim-grid,
+      .project-grid,
+      .db-card-grid {
+        grid-template-columns: 1fr;
+      }
+      .part-visual {
+        margin-bottom: 12px;
+      }
+      .resource-card {
+        align-items: stretch;
+      }
+      .resource-thumb {
+        width: 78px;
+      }
+      .canvas-stage {
+        grid-template-rows: auto minmax(280px, 280px) auto;
+      }
+      .log-box,
+      .code-box {
+        font-size: 11px;
+      }
+      .top-nav-btn {
+        padding: 9px 12px;
+        font-size: 13px;
+      }
+      .avatar {
+        width: 34px;
+        height: 34px;
+      }
     }
   </style>
 </head>
