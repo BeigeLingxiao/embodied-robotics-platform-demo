@@ -1,0 +1,15 @@
+{
+  "id": "part_003",
+  "aliases": ["part_016"],
+  "name": "Intel RealSense D435 深度相机",
+  "model": "D435",
+  "brand": "Intel RealSense",
+  "category": "深度相机",
+  "image": "image.png",
+  "manuals": [
+    {
+      "name": "Intel RealSense D400 系列深度相机",
+      "file": "Intel RealSense D400 系列深度相机.pdf"
+    }
+  ]
+}
