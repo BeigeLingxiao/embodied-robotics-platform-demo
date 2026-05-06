@@ -1,0 +1,2708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>苏州具身智能机器人生态服务平台 Demo</title>
+  <style>
+    :root {
+      --bg: #f5f7fb;
+      --panel: #ffffff;
+      --panel-2: #ffffff;
+      --panel-3: #ffffff;
+      --line: rgba(0, 0, 0, 0.1);
+      --text: #1a1a1a;
+      --muted: #6b7280;
+      --brand: #0d6efd;
+      --brand-2: #20c997;
+      --warn: #ffc107;
+      --danger: #dc3545;
+      --success: #198754;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: var(--text);
+      background: var(--bg);
+      min-height: 100vh;
+    }
+    button, input, select, textarea { font: inherit; }
+    h1, h2, h3, h4, p { margin-top: 0; }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: 360px 1fr auto;
+      grid-template-areas:
+        "logo search user"
+        "nav nav nav";
+      align-items: center;
+      gap: 14px 16px;
+      padding: 16px 22px;
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--line);
+    }
+    .logo-wrap { grid-area: logo; display: flex; align-items: center; gap: 14px; }
+    .logo-badge {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--brand), #5a77ff);
+      display: grid;
+      place-items: center;
+      box-shadow: 0 12px 30px rgba(51, 183, 255, 0.25);
+      font-weight: 800;
+    }
+    .logo-copy strong { display: block; font-size: 20px; white-space: nowrap; }
+    .logo-copy span { color: var(--muted); font-size: 12px; }
+
+    .search-global {
+      grid-area: search;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 10px 16px;
+    }
+    .search-global input {
+      width: 100%;
+      border: 0;
+      outline: none;
+      background: transparent;
+      color: var(--text);
+    }
+    .top-actions { grid-area: user; display: flex; align-items: center; gap: 10px; }
+    .user-menu-wrap {
+      position: relative;
+    }
+    .avatar-btn {
+      border: 0;
+      background: transparent;
+      padding: 0;
+      cursor: pointer;
+    }
+    .top-nav {
+      grid-area: nav;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-top: 2px;
+    }
+    .top-nav-btn {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--text);
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .top-nav-btn.active {
+      background: linear-gradient(90deg, rgba(51, 183, 255, 0.22), rgba(30, 224, 179, 0.1));
+      border-color: rgba(51, 183, 255, 0.3);
+    }
+    .avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1ee0b3, #33b7ff);
+      display: grid;
+      place-items: center;
+      color: #04253c;
+      font-weight: 800;
+    }
+    .user-dropdown {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      min-width: 220px;
+      padding: 10px;
+      border-radius: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow);
+      display: none;
+    }
+    .user-dropdown.open {
+      display: block;
+    }
+    .user-dropdown-header {
+      padding: 10px 12px 12px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 8px;
+    }
+    .menu-item {
+      width: 100%;
+      text-align: left;
+      border: 0;
+      background: transparent;
+      color: var(--text);
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    .menu-item:hover {
+      background: linear-gradient(90deg, rgba(51, 183, 255, 0.18), rgba(30, 224, 179, 0.08));
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      gap: 20px;
+      padding: 20px;
+    }
+    .layout.no-rightbar {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .rightbar {
+      position: sticky;
+      top: 90px;
+      align-self: start;
+      height: auto;
+      max-height: calc(100vh - 110px);
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+    .nav-group { margin-bottom: 18px; }
+    .nav-title {
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: 0.08em;
+      margin: 0 10px 10px;
+      text-transform: uppercase;
+    }
+    .nav-item {
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: 0;
+      color: var(--text);
+      padding: 12px 12px;
+      border-radius: 14px;
+      margin-bottom: 6px;
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+    .nav-item:hover, .nav-item.active {
+      background: linear-gradient(90deg, rgba(51, 183, 255, 0.18), rgba(30, 224, 179, 0.08));
+      border: 1px solid rgba(51, 183, 255, 0.24);
+    }
+
+    .content { min-width: 0; }
+    .page { display: none; animation: fadeIn 0.24s ease; }
+    .page.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero { display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px; margin-bottom: 18px; }
+    .hero-card, .panel, .metric-card, .part-card, .editor-shell, .sim-card, .right-section, .project-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+    }
+    .hero-card { padding: 22px; position: relative; overflow: hidden; }
+    .hero-card::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -50% auto;
+      width: 320px;
+      height: 260px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(13, 110, 253, 0.15), transparent 65%);
+      pointer-events: none;
+    }
+    .hero-card:first-child {
+      display: flex;
+      flex-direction: column;
+      min-height: 260px;
+      gap: 16px;
+    }
+    .hero-card:first-child .cta-row {
+      margin-top: auto;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .hero-card:first-child .cta-row .btn {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    h1 { font-size: 34px; line-height: 1.18; margin-bottom: 0; }
+    .sub { color: var(--muted); line-height: 1.7; margin-bottom: 0; }
+    .cta-row, .row, .chips, .toolbar, .sim-actions, .summary-row { display: flex; flex-wrap: nowrap; gap: 10px; }
+    .toolbar { justify-content: stretch; }
+    .toolbar .btn {
+      flex: 1;
+      min-width: 90px;
+    }
+    .btn {
+      border: 0;
+      border-radius: 999px;
+      padding: 11px 18px;
+      cursor: pointer;
+      color: #03243b;
+      font-weight: 700;
+      min-width: 100px;
+      text-align: center;
+      background: linear-gradient(135deg, var(--brand), var(--brand-2));
+    }
+    .btn.secondary {
+      background: rgba(13, 110, 253, 0.08);
+      color: var(--brand);
+      border: 1px solid rgba(13, 110, 253, 0.2);
+    }
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(13, 110, 253, 0.12);
+      border: 1px solid rgba(13, 110, 253, 0.2);
+      color: var(--brand);
+      font-size: 12px;
+    }
+
+    .grid-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .metric-card { padding: 18px; }
+    .metric-card strong { font-size: 28px; display: block; margin: 10px 0 6px; }
+    .metric-card span { color: var(--muted); font-size: 13px; }
+
+    .panel { padding: 20px; margin-bottom: 18px; }
+    .split-2, .split-3 { display: grid; gap: 18px; }
+    .split-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .split-2.solution-main { grid-template-columns: 1.5fr 1fr; }
+    .split-3 { grid-template-columns: 1.05fr 1.25fr 0.95fr; }
+
+    .flow { display: flex; flex-wrap: wrap; gap: 10px; }
+    .flow-step {
+      flex: 1 1 150px;
+      min-width: 130px;
+      padding: 14px;
+      border-radius: 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+    .flow-step small, .muted { color: var(--muted); }
+
+    .part-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+    .solution-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+    .part-card { padding: 16px; }
+    .part-visual {
+      aspect-ratio: 4 / 3;
+      border-radius: 18px;
+      margin-bottom: 14px;
+      background:
+        linear-gradient(135deg, rgba(51, 183, 255, 0.28), rgba(30, 224, 179, 0.06)),
+        linear-gradient(180deg, #193055, #0d1930);
+      display: grid;
+      place-items: center;
+      font-size: 36px;
+      overflow: hidden;
+      position: relative;
+    }
+    .part-visual.large {
+      aspect-ratio: auto;
+      height: 220px;
+      font-size: 64px;
+    }
+    .part-visual.has-photo {
+      background: linear-gradient(180deg, #eef4fa, #dce6f2);
+    }
+    .part-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+    .photo-fallback {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+    }
+    .price { font-size: 24px; font-weight: 800; color: #ff9500; }
+    .part-meta, .spec-list, .mini-list { display: grid; gap: 6px; }
+    .part-meta div, .spec-row, .mini-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .part-meta strong, .spec-row strong, .mini-row strong { color: var(--text); font-weight: 600; }
+
+    .mall-toolbar {
+      display: grid;
+      grid-template-columns: 1.3fr repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .field, textarea, select, input {
+      width: 100%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      color: var(--text);
+      padding: 12px 14px;
+      outline: none;
+    }
+    textarea { resize: vertical; min-height: 130px; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 12px 10px;
+      text-align: left;
+      border-bottom: 1px solid rgba(143, 196, 255, 0.08);
+      font-size: 13px;
+      vertical-align: top;
+    }
+    th { color: var(--muted); font-weight: 600; }
+    .status-good, .status-mid, .status-bad {
+      padding: 4px 8px;
+      border-radius: 999px;
+      font-size: 12px;
+      display: inline-block;
+    }
+    .status-good { background: rgba(93, 242, 165, 0.12); color: var(--success); }
+    .status-mid { background: rgba(255, 184, 77, 0.12); color: var(--warn); }
+    .status-bad { background: rgba(255, 107, 125, 0.12); color: var(--danger); }
+
+    .editor-shell {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr) 280px;
+      overflow: hidden;
+      min-height: 660px;
+    }
+    .editor-pane { padding: 16px; border-right: 1px solid var(--line); }
+    .editor-pane:last-child { border-right: 0; border-left: 1px solid var(--line); }
+    .canvas-stage {
+      padding: 18px;
+      display: grid;
+      grid-template-rows: auto minmax(460px, 460px) auto;
+      gap: 14px;
+      min-width: 0;
+    }
+    .fake-canvas {
+      position: relative;
+      border-radius: 22px;
+      height: 100%;
+      min-height: 0;
+      overflow: hidden;
+      isolation: isolate;
+      user-select: none;
+      touch-action: manipulation;
+      background:
+        linear-gradient(180deg, rgba(13, 25, 48, 0.96), rgba(7, 17, 31, 0.98)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 56px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 56px);
+      border: 1px solid var(--line);
+    }
+    .fake-canvas > div,
+    .fake-canvas .lf-graph {
+      width: 100%;
+      height: 100%;
+    }
+    .fake-canvas .lf-graph {
+      background:
+        linear-gradient(180deg, rgba(13, 25, 48, 0.96), rgba(7, 17, 31, 0.98)),
+        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 56px),
+        repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 56px);
+    }
+    .fake-canvas .lf-base,
+    .fake-canvas .lf-canvas-overlay,
+    .fake-canvas .modification-overlay {
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      max-height: 100%;
+    }
+    .fake-canvas .modification-overlay {
+      pointer-events: none;
+    }
+    .fake-canvas svg {
+      border-radius: 22px;
+    }
+    .log-box, .code-box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 14px;
+      color: var(--text);
+      white-space: pre-wrap;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 12px;
+    }
+    .log-box {
+      position: relative;
+      z-index: 1;
+    }
+
+    .progress {
+      height: 10px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 999px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+    .progress > span {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--brand), var(--brand-2));
+      transition: width 0.3s ease;
+    }
+    .sim-grid, .db-grid, .project-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .sim-card, .project-card { padding: 18px; }
+    .db-shell {
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 18px;
+      align-items: start;
+    }
+    .db-sidebar {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 14px;
+      position: sticky;
+      top: 104px;
+    }
+    .db-nav-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text);
+      padding: 12px 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      margin-bottom: 8px;
+    }
+    .db-nav-btn.active,
+    .db-nav-btn:hover {
+      background: linear-gradient(90deg, rgba(51, 183, 255, 0.16), rgba(30, 224, 179, 0.08));
+      border-color: rgba(51, 183, 255, 0.2);
+    }
+    .db-content {
+      display: grid;
+      gap: 16px;
+    }
+    .db-hero {
+      padding: 20px 22px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, rgba(13, 110, 253, 0.12), rgba(32, 201, 151, 0.08));
+      border: 1px solid rgba(13, 110, 253, 0.12);
+    }
+    .db-card-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .resource-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 18px;
+      box-shadow: var(--shadow);
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      min-height: 144px;
+      overflow: hidden;
+    }
+    .resource-thumb {
+      flex-shrink: 0;
+      height: 100%;
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      background:
+        linear-gradient(180deg, rgba(236, 240, 245, 0.98), rgba(214, 220, 228, 0.98)),
+        repeating-linear-gradient(45deg, rgba(255, 255, 255, 0.26) 0 10px, rgba(210, 216, 224, 0.26) 10px 20px);
+      display: grid;
+      place-items: center;
+      color: #7a8697;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .resource-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .resource-body {
+      flex: 1;
+      min-width: 0;
+      display: grid;
+      align-content: start;
+      gap: 8px;
+    }
+    .resource-card h3 {
+      margin-bottom: 0;
+      font-size: 18px;
+      line-height: 1.35;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .resource-body .sub {
+      margin-bottom: 0;
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .resource-meta {
+      display: grid;
+      gap: 6px;
+      margin-top: 0;
+    }
+    .resource-meta .mini-row {
+      padding-bottom: 6px;
+      border-bottom: 1px dashed rgba(143, 196, 255, 0.12);
+    }
+    .resource-meta .mini-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+    .rightbar { padding: 18px; }
+    .rightbar.ai-only-hidden { display: none; }
+    .right-section { padding: 16px; margin-bottom: 14px; }
+    .kpi { font-size: 30px; font-weight: 800; margin: 8px 0; }
+    .bar-chart {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-around;
+      height: 200px;
+      padding: 0 8px;
+      background: linear-gradient(180deg, rgba(13, 110, 253, 0.05) 0%, transparent 100%);
+      border-radius: 12px;
+    }
+    .bar-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 0 0 auto;
+      width: 20px;
+      height: 100%;
+      justify-content: flex-end;
+    }
+    .bar-fill {
+      width: 100%;
+      max-width: 18px;
+      background: linear-gradient(180deg, var(--brand) 0%, var(--brand-2) 100%);
+      border-radius: 4px 4px 0 0;
+      min-height: 4px;
+      transition: height 0.3s ease;
+    }
+    .bar-item span {
+      font-size: 10px;
+      color: var(--muted);
+      margin-top: 6px;
+      white-space: nowrap;
+    }
+    .resource-panel {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .resource-spec {
+      flex: 1;
+      margin-bottom: 16px;
+    }
+    .resource-chart {
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(13, 110, 253, 0.03) 0%, transparent 100%);
+      border-radius: 0 0 24px 24px;
+    }
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      padding: 0 4px;
+    }
+    .chart-title {
+      font-size: 13px;
+      color: var(--muted);
+    }
+    .chart-trend {
+      font-size: 12px;
+      color: var(--success);
+      font-weight: 600;
+    }
+    .ai-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      height: 100%;
+    }
+    .ai-header {
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    .ai-content {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr 0.95fr;
+      gap: 20px;
+      flex: 1;
+      min-height: 0;
+    }
+    .ai-input-section, .ai-result-section, .ai-explain-section {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .requirement-textarea {
+      width: 100%;
+      min-height: 160px;
+      flex: 1;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      resize: vertical;
+      font-family: inherit;
+      font-size: 13px;
+      line-height: 1.6;
+      background: var(--panel);
+      color: var(--text);
+    }
+    .ai-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .field-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .field-label {
+      width: 50px;
+      font-size: 13px;
+      color: var(--muted);
+      flex-shrink: 0;
+    }
+    .field-row .field {
+      flex: 1;
+    }
+    .ai-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: auto;
+    }
+    .ai-actions .btn {
+      flex: 1;
+      min-width: 90px;
+    }
+    .result-panel, .explain-panel {
+      flex: 1;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+    }
+    .ai-main-layout {
+      display: grid;
+      grid-template-columns: 1.7fr 0.3fr;
+      gap: 20px;
+    }
+    .ai-side-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 20px;
+      height: 100%;
+    }
+    .side-section {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--line);
+    }
+    .side-section:last-child {
+      border-bottom: none;
+    }
+    .side-section h4 {
+      margin-bottom: 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .side-section.expand {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .side-section.expand .mini-list {
+      flex: 1;
+      overflow: auto;
+    }
+    /* 产品详情页面样式 */
+    .detail-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .detail-header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      margin: 0;
+    }
+    .detail-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      margin-bottom: 24px;
+    }
+    .detail-left {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .visual-box {
+      background: linear-gradient(135deg, rgba(13, 110, 253, 0.08) 0%, rgba(32, 201, 151, 0.08) 100%);
+      border-radius: 20px;
+      padding: 20px;
+      text-align: center;
+      aspect-ratio: 4 / 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .visual-box .part-visual {
+      width: 100%;
+      height: 100%;
+    }
+    .visual-box .part-visual img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+    .detail-tags {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .brand-tag {
+      background: var(--brand);
+      color: white;
+    }
+    .primary-tag {
+      background: var(--brand-2);
+      color: white;
+    }
+    .detail-desc {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+    .detail-desc p {
+      margin: 0;
+    }
+    .detail-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: auto;
+    }
+    .detail-actions .btn {
+      flex: 1;
+      min-width: 110px;
+    }
+    .detail-actions .btn.primary {
+      background: var(--brand);
+      color: white;
+    }
+    .detail-right {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .info-card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+    }
+    .info-card h3 {
+      margin: 0 0 16px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .price-table {
+      margin-bottom: 16px;
+    }
+    .price-table table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .price-table th, .price-table td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+    .price-table th {
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .info-row {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 12px;
+      background: rgba(0, 0, 0, 0.03);
+      border-radius: 10px;
+    }
+    .info-label {
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .spec-card {
+      flex: 1;
+    }
+    .spec-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px dashed var(--line);
+    }
+    .spec-row:last-child {
+      border-bottom: none;
+    }
+    .spec-row span {
+      color: var(--muted);
+    }
+    .compat-section {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid var(--line);
+    }
+    .compat-section h4 {
+      margin: 0 0 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .compat-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .compat-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 12px;
+      background: rgba(13, 110, 253, 0.05);
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .compat-item span {
+      color: var(--muted);
+    }
+    .detail-section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px;
+      margin-bottom: 18px;
+    }
+    .detail-section h3 {
+      margin: 0 0 16px;
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .alt-table-wrap {
+      overflow-x: auto;
+    }
+    .alt-table-wrap table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .alt-table-wrap th, .alt-table-wrap td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid var(--line);
+    }
+    .alt-table-wrap th {
+      font-weight: 600;
+      color: var(--muted);
+    }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 88px 1fr 46px;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+    }
+    .bar { height: 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.07); overflow: hidden; }
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--brand), var(--brand-2));
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 10, 20, 0.72);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 30;
+    }
+    .modal.open { display: flex; }
+    .modal-card {
+      width: min(860px, 100%);
+      max-height: 88vh;
+      overflow: auto;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 22px;
+      box-shadow: var(--shadow);
+    }
+    .empty {
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 18px;
+      padding: 18px;
+      text-align: center;
+    }
+
+    @media (max-width: 1440px) {
+      .layout { grid-template-columns: minmax(0, 1fr); }
+      .rightbar { position: static; height: auto; grid-column: 1 / -1; }
+      .hero, .split-3, .editor-shell { grid-template-columns: 1fr; }
+      .grid-metrics, .part-grid, .sim-grid, .db-grid, .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (max-width: 960px) {
+      .topbar, .layout, .mall-toolbar, .split-2, .grid-metrics, .part-grid, .sim-grid, .db-grid, .project-grid { grid-template-columns: 1fr; }
+      .rightbar { position: static; height: auto; }
+      .editor-shell { min-height: auto; }
+      .canvas-stage { grid-template-rows: auto minmax(360px, 360px) auto; }
+      .db-shell, .db-card-grid { grid-template-columns: 1fr; }
+      .db-sidebar { position: static; }
+      .resource-card { gap: 14px; min-height: 124px; }
+      .resource-thumb { height: 100%; aspect-ratio: 1 / 1; }
+      .layout { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo-wrap">
+      <div class="logo-badge">SZ</div>
+      <div class="logo-copy">
+        <strong>苏州具身智能机器人生态服务平台</strong>
+        <span>产业级零部件商城 + 在线工程设计 + AI 选型 + 仿真测试</span>
+      </div>
+    </div>
+    <div class="search-global">
+      <span>🔎</span>
+      <input id="globalSearch" type="text" placeholder="搜索零部件、供应商、方案、场景、SDK 或项目">
+    </div>
+    <div class="top-actions">
+      <div class="user-menu-wrap">
+        <button class="avatar-btn" id="avatarBtn" type="button" aria-label="打开用户菜单">
+          <div class="avatar">ZY</div>
+        </button>
+        <div class="user-dropdown" id="userDropdown">
+          <div class="user-dropdown-header">
+            <strong>朱煜</strong>
+            <div class="muted" style="margin-top:4px;">具身智能工程师</div>
+          </div>
+          <button class="menu-item" type="button" data-user-nav="workspace">个人中心</button>
+          <button class="menu-item" type="button" data-user-nav="projects">工程管理</button>
+          <button class="menu-item" type="button" data-user-nav="simulation">仿真任务</button>
+        </div>
+      </div>
+    </div>
+    <div class="top-nav">
+      <button class="top-nav-btn active" data-nav="dashboard">首页总览</button>
+      <button class="top-nav-btn" data-nav="mall">零部件商城</button>
+      <button class="top-nav-btn" data-nav="ai">AI选型设计</button>
+      <button class="top-nav-btn" data-nav="bom">BOM与报价中心</button>
+      <button class="top-nav-btn" data-nav="editor">机器人编辑器</button>
+      <button class="top-nav-btn" data-nav="simulation">仿真测试</button>
+      <button class="top-nav-btn" data-nav="database">产业园数据库</button>
+    </div>
+  </header>
+
+  <div class="layout no-rightbar" id="appLayout">
+    <main class="content">
+      <section class="page active" id="page-dashboard">
+        <div class="hero">
+          <div class="hero-card">
+            <div class="chips">
+              <span class="tag">产业级机器人平台</span>
+              <span class="tag">苏州产业园数据联动</span>
+              <span class="tag">AI Copilot 工程选型</span>
+            </div>
+            <h1>用 AI 连接机器人零部件、设计、仿真、采购与交付</h1>
+            <p class="sub">面向具身智能产业链的综合服务平台，打通需求输入、AI 推荐、商城选型、BOM 报价、在线装配、MuJoCo 仿真、SDK 配置与项目交付全流程。</p>
+            <div class="cta-row">
+              <button class="btn" data-nav-target="ai">开始 AI 选型</button>
+              <button class="btn secondary" data-nav-target="mall">浏览零部件商城</button>
+              <button class="btn secondary" data-nav-target="editor">打开机器人编辑器</button>
+              <button class="btn secondary" data-nav-target="database">查看产业园数据库</button>
+            </div>
+          </div>
+          <div class="hero-card">
+            <h3>平台闭环工作流</h3>
+            <div class="flow">
+              <div class="flow-step"><strong>需求输入</strong><br><small>自然语言与结构化指标</small></div>
+              <div class="flow-step"><strong>AI选型</strong><br><small>场景、成本、库存、交期综合评分</small></div>
+              <div class="flow-step"><strong>BOM/报价</strong><br><small>一键生成采购与替代料建议</small></div>
+              <div class="flow-step"><strong>在线装配</strong><br><small>结构树、属性、接口映射</small></div>
+              <div class="flow-step"><strong>仿真测试</strong><br><small>MuJoCo 场景库与用例库</small></div>
+              <div class="flow-step"><strong>SDK交付</strong><br><small>URDF / API / ROS2 / Python</small></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-metrics" id="dashboardMetrics"></div>
+
+        <div class="split-2 solution-main">
+          <div class="panel">
+            <h3>热门机器人方案专区</h3>
+            <div class="solution-grid" id="solutionCards"></div>
+          </div>
+          <div class="panel resource-panel">
+            <h3>产业资源入口</h3>
+            <div class="spec-list resource-spec">
+              <div class="spec-row"><span>企业库</span><strong>86 家认证企业</strong></div>
+              <div class="spec-row"><span>零部件 SKU</span><strong>1,248 个核心条目</strong></div>
+              <div class="spec-row"><span>3D 模型资源</span><strong>512 份 STEP / GLTF</strong></div>
+              <div class="spec-row"><span>可输出 URDF</span><strong>206 个模型模板</strong></div>
+              <div class="spec-row"><span>仿真场景库</span><strong>24 个标准场景</strong></div>
+              <div class="spec-row"><span>测试用例库</span><strong>58 条自动化用例</strong></div>
+            </div>
+            <div class="resource-chart">
+              <div class="chart-header">
+                <span class="chart-title">月度新增资源</span>
+                <span class="chart-trend">+23% ↑</span>
+              </div>
+              <div class="bar-chart">
+                <div class="bar-item"><div class="bar-fill" style="height: 35%;"></div><span>1月</span></div>
+                <div class="bar-item"><div class="bar-fill" style="height: 42%;"></div><span>2月</span></div>
+                <div class="bar-item"><div class="bar-fill" style="height: 38%;"></div><span>3月</span></div>
+                <div class="bar-item"><div class="bar-fill" style="height: 55%;"></div><span>4月</span></div>
+                <div class="bar-item"><div class="bar-fill" style="height: 68%;"></div><span>5月</span></div>
+                <div class="bar-item"><div class="bar-fill" style="height: 75%;"></div><span>6月</span></div>
+                <div class="bar-item"><div class="bar-fill" style="height: 88%;"></div><span>7月</span></div>
+                <div class="bar-item"><div class="bar-fill" style="height: 100%;"></div><span>8月</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-ai">
+        <div class="ai-main-layout">
+          <div class="panel ai-panel">
+            <div class="ai-header">
+              <h2>AI 设计选型助手</h2>
+              <p class="sub">输入机器人类型、应用场景、关键指标、预算与约束条件，系统将综合场景匹配度、参数匹配度、库存、交期、接口兼容与仿真资源完整度，自动生成推荐方案与 BOM。</p>
+            </div>
+            <div class="ai-content">
+              <div class="ai-input-section">
+                <h3>需求描述</h3>
+                <textarea id="requirementText" class="requirement-textarea">设计一款用于苏州工业园区巡检的轮式具身智能机器人，要求整机尺寸适合园区步道与楼宇通道通行，支持激光雷达导航、视觉识别、语音交互，可运行 MuJoCo 仿真并接入 Python SDK，预算控制在8万元以内，优先选择产业园认证供应商和现货部件。</textarea>
+                <div class="ai-fields">
+                  <div class="field-row">
+                    <label class="field-label">类型</label>
+                    <select id="robotType" class="field">
+                      <option>轮式移动机器人</option>
+                      <option>工业协作机械臂</option>
+                      <option>人形机器人上肢</option>
+                      <option>仓储物流 AMR</option>
+                    </select>
+                  </div>
+                  <div class="field-row">
+                    <label class="field-label">场景</label>
+                    <select id="scenarioType" class="field">
+                      <option>园区巡检</option>
+                      <option>工厂协作装配</option>
+                      <option>科研教学</option>
+                      <option>仓储搬运</option>
+                    </select>
+                  </div>
+                  <div class="field-row">
+                    <label class="field-label">预算</label>
+                    <input id="budgetInput" class="field" type="number" value="80000" placeholder="预算（元）">
+                  </div>
+                  <div class="field-row">
+                    <label class="field-label">尺寸</label>
+                    <input id="sizeInput" class="field" type="text" value="900×650×1350mm" placeholder="整机尺寸（长×宽×高）">
+                  </div>
+                </div>
+                <div class="ai-actions">
+                  <button class="btn" id="runAiBtn">AI一键选型</button>
+                  <button class="btn secondary" id="generateBomFromAiBtn">生成 BOM</button>
+                  <button class="btn secondary" id="openEditorFromAiBtn">进入编辑器</button>
+                </div>
+              </div>
+              <div class="ai-result-section">
+                <h3>AI 推荐结果</h3>
+                <div id="aiResult" class="result-panel">
+                  <div class="empty">点击“AI一键选型”后生成推荐方案。</div>
+                </div>
+              </div>
+              <div class="ai-explain-section">
+                <h3>AI 解释面板</h3>
+                <div id="aiExplain" class="explain-panel">
+                  <div class="mini-list">
+                    <div class="mini-row"><span>优先约束</span><strong>产业园供应商、现货、MuJoCo、Python SDK</strong></div>
+                    <div class="mini-row"><span>评分维度</span><strong>场景 20% / 参数 20% / 成本 15% / 库存 15%</strong></div>
+                    <div class="mini-row"><span>待检查项</span><strong>通信接口、尺寸约束、交期风险</strong></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel ai-side-panel">
+            <div class="side-section">
+              <div class="muted">AI 推荐匹配度</div>
+              <div class="kpi" id="rightScore">92%</div>
+              <div class="progress"><span style="width:92%"></span></div>
+              <div class="muted" id="rightSummary">方案 A 已兼顾预算、现货、MuJoCo 与 Python SDK 约束。</div>
+            </div>
+            <div class="side-section expand">
+              <h4>当前对比栏</h4>
+              <div id="compareList" class="mini-list">
+                <div class="empty">尚未加入对比</div>
+              </div>
+            </div>
+            <div class="side-section">
+              <h4>实时业务状态</h4>
+              <div class="mini-list">
+                <div class="mini-row"><span>BOM 条目</span><strong id="bomCount">0</strong></div>
+                <div class="mini-row"><span>编辑器组件</span><strong id="editorCount">0</strong></div>
+                <div class="mini-row"><span>RFQ 状态</span><strong id="rfqStatus">未发起</strong></div>
+                <div class="mini-row"><span>仿真任务</span><strong id="simTaskStatus">待运行</strong></div>
+              </div>
+            </div>
+            <div class="side-section">
+              <h4>风险雷达</h4>
+              <div class="chart-bars" id="riskRadar">
+                <div class="bar-row"><span>库存</span><div class="bar"><span style="width:24%"></span></div><strong>低</strong></div>
+                <div class="bar-row"><span>交期</span><div class="bar"><span style="width:42%"></span></div><strong>中</strong></div>
+                <div class="bar-row"><span>接口</span><div class="bar"><span style="width:18%"></span></div><strong>低</strong></div>
+                <div class="bar-row"><span>成本</span><div class="bar"><span style="width:36%"></span></div><strong>可控</strong></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-mall">
+        <div class="panel">
+          <h2>零部件商城</h2>
+          <div class="mall-toolbar">
+            <input id="mallSearch" class="field" type="text" placeholder="搜索型号、品牌、供应商、类目">
+            <select id="mallCategory" class="field"></select>
+            <select id="mallStock" class="field">
+              <option value="all">库存状态</option>
+              <option value="instock">仅看现货</option>
+              <option value="low">低库存风险</option>
+            </select>
+            <select id="mallPark" class="field">
+              <option value="all">供应来源</option>
+              <option value="park">仅看产业园企业</option>
+            </select>
+          </div>
+          <div class="part-grid" id="mallGrid"></div>
+        </div>
+      </section>
+
+      <section class="page" id="page-detail">
+        <div class="panel" id="detailView"></div>
+      </section>
+
+      <section class="page" id="page-bom">
+        <div class="panel">
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <div>
+              <h2>BOM 与报价中心</h2>
+              <p class="sub">系统根据推荐方案与手工加入的零部件自动生成采购清单、成本分析、交期风险与替代料建议。</p>
+            </div>
+            <div class="toolbar" style="min-width: 280px;">
+              <button class="btn" id="generateQuoteBtn">生成报价单</button>
+              <button class="btn secondary" id="sendRfqBtn">发起询价</button>
+            </div>
+          </div>
+          <div class="summary-row" id="bomSummary"></div>
+          <table>
+            <thead>
+              <tr>
+                <th>模块</th>
+                <th>型号</th>
+                <th>品牌/供应商</th>
+                <th>参数摘要</th>
+                <th>数量</th>
+                <th>单价</th>
+                <th>小计</th>
+                <th>库存</th>
+                <th>交期</th>
+              </tr>
+            </thead>
+            <tbody id="bomTableBody"></tbody>
+          </table>
+          <div class="split-2" style="margin-top:18px;">
+            <div class="panel" style="margin:0;">
+              <h3>替代料建议</h3>
+              <div id="bomAlternatives" class="mini-list"></div>
+            </div>
+            <div class="panel" style="margin:0;">
+              <h3>报价单预览</h3>
+              <div id="quotePreview" class="empty">点击“生成报价单”后显示预览。</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-editor">
+        <div class="panel">
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <div>
+              <h2>在线机器人编辑器</h2>
+              <p class="sub">支持零部件导入、组件树浏览、属性配置、接口检查、URDF/MuJoCo 导出与工程保存。</p>
+            </div>
+            <div class="toolbar">
+              <button class="btn secondary" id="interfaceCheckBtn">接口检查</button>
+              <button class="btn secondary" id="exportUrdfBtn">导出 URDF</button>
+              <button class="btn secondary" id="exportMjBtn">配置 MuJoCo</button>
+              <button class="btn secondary" id="deleteEdgeBtn">删除连线</button>
+              <button class="btn" id="saveProjectBtn">保存工程</button>
+            </div>
+          </div>
+          <div class="editor-shell">
+            <div class="editor-pane">
+              <h3>组件树</h3>
+              <div id="componentTree" class="mini-list"></div>
+            </div>
+            <div class="canvas-stage">
+              <div class="toolbar">
+                <span class="tag">3D装配视图</span>
+                <span class="tag">STEP/GLTF 映射</span>
+                <span class="tag">接口自动识别</span>
+              </div>
+              <div class="fake-canvas" id="editorCanvas"></div>
+              <div class="log-box" id="editorLog">等待导入零部件并生成装配结构...</div>
+            </div>
+            <div class="editor-pane">
+              <h3>属性面板</h3>
+              <div id="propertyPanel" class="mini-list">
+                <div class="empty">点击组件树或画布中的部件查看参数。</div>
+              </div>
+            </div>
+          </div>
+          <div class="split-2" style="margin-top:18px;">
+            <div class="panel" style="margin:0;">
+              <h3>SDK 配置</h3>
+              <div class="mini-list">
+                <div class="mini-row"><span>模型 ID</span><strong id="sdkModelId">inspection_bot_v1</strong></div>
+                <div class="mini-row"><span>控制模式</span><strong>velocity</strong></div>
+                <div class="mini-row"><span>通信协议</span><strong>ROS2 / CAN / EtherCAT</strong></div>
+                <div class="mini-row"><span>SDK 组合</span><strong>Python SDK + C++ SDK + ROS2 Package</strong></div>
+                <div class="mini-row"><span>仿真引擎</span><strong>MuJoCo</strong></div>
+              </div>
+            </div>
+            <div class="panel" style="margin:0;">
+              <h3>SDK / API 示例</h3>
+              <div class="code-box" id="sdkCodeBox">from suzhou_robot_platform import RobotClient</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-simulation">
+        <div class="panel">
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <div>
+              <h2>仿真测试中心</h2>
+              <p class="sub">连接场景库与用例库，自动运行 MuJoCo 仿真任务，输出任务完成率、避障成功率、续航估算、控制延迟与风险评级。</p>
+            </div>
+            <div class="sim-actions">
+              <select id="sceneSelect" class="field" style="width:220px;"></select>
+              <select id="caseSelect" class="field" style="width:220px;"></select>
+              <button class="btn" id="runSimBtn">运行仿真</button>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:0;">
+            <h3>运行进度</h3>
+            <div class="progress"><span id="simProgressBar"></span></div>
+            <div id="simStatus" class="muted">待启动</div>
+          </div>
+          <div class="sim-grid">
+            <div class="sim-card">
+              <h3>仿真结果</h3>
+              <div id="simResult" class="empty">点击“运行仿真”后生成结果。</div>
+            </div>
+            <div class="sim-card">
+              <h3>测试报告摘要</h3>
+              <div id="simReport" class="code-box">{
+  "scene": "suzhou_industrial_park_route_a",
+  "status": "pending",
+  "task_completion": null,
+  "obstacle_avoidance": null,
+  "endurance_estimate": null
+}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-database">
+        <div class="panel">
+          <h2>产业园数据库</h2>
+          <div class="db-shell">
+            <aside class="db-sidebar" id="databaseSidebar"></aside>
+            <div class="db-content" id="databaseContent"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-workspace">
+        <div class="panel">
+          <button class="btn secondary back-btn" onclick="goBack()">← 返回</button>
+          <h2>个人中心</h2>
+          <div class="split-2">
+            <div class="panel" style="margin:0;">
+              <h3>基本信息</h3>
+              <div class="spec-list">
+                <div class="spec-row"><span>ID</span><strong>USR-SMVIC-20260429-018</strong></div>
+                <div class="spec-row"><span>账号名称</span><strong>朱煜</strong></div>
+                <div class="spec-row"><span>性别</span><strong>男</strong></div>
+                <div class="spec-row"><span>账号归属</span><strong>公司账号</strong></div>
+                <div class="spec-row"><span>所属企业</span><strong>上海机动车检测认证技术研究中心有限公司</strong></div>
+                <div class="spec-row"><span>职业</span><strong>具身智能工程师</strong></div>
+              </div>
+            </div>
+            <div class="panel" style="margin:0;">
+              <h3>绑定信息</h3>
+              <div class="spec-list">
+                <div class="spec-row"><span>绑定手机</span><strong>138****2048</strong></div>
+                <div class="spec-row"><span>绑定微信</span><strong>已绑定</strong></div>
+                <div class="spec-row"><span>绑定邮箱</span><strong>zhuyu@smvic.com</strong></div>
+                <div class="spec-row"><span>账号状态</span><strong>正常</strong></div>
+                <div class="spec-row"><span>最近登录</span><strong>2026-04-29 16:18</strong></div>
+                <div class="spec-row"><span>权限等级</span><strong>企业高级成员</strong></div>
+              </div>
+            </div>
+          </div>
+          <div class="panel" style="margin-top:18px;">
+            <h3>账号说明</h3>
+            <p class="sub" style="margin-bottom:0;">当前账号已开通企业级选型、BOM 管理、仿真任务发起、项目协同与产业园资源访问权限。</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="page" id="page-projects">
+        <div class="panel">
+          <button class="btn secondary back-btn" onclick="goBack()">← 返回</button>
+          <h2>工程管理</h2>
+          <div class="project-grid" id="projectGrid"></div>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <div class="modal" id="modal">
+    <div class="modal-card">
+      <div class="row" style="justify-content:space-between; align-items:center;">
+        <h3 id="modalTitle">详情</h3>
+        <button class="btn secondary" id="closeModalBtn">关闭</button>
+      </div>
+      <div id="modalBody"></div>
+    </div>
+  </div>
+  <script src="assets/vendor/logicflow-core-2.1.1.min.js"></script>
+  <script>
+    const appState = {
+      currentPage: "dashboard",
+      pageHistory: [],
+      selectedPartId: "part_001",
+      recommendedSolutionId: "solution_001",
+      recommendedParts: [],
+      bom: [],
+      compare: [],
+      editorParts: [],
+      selectedEditorNodeId: "",
+      selectedEditorEdgeId: "",
+      editorGraphData: null,
+      selectedDatabaseTab: "companies",
+      logicflow: null,
+      rfqStatus: "未发起",
+      simulation: { progress: 0, running: false },
+      savedProjects: [
+        { name: "园区巡检移动机器人 Demo", type: "轮式移动机器人", status: "仿真通过", date: "2026-04-28" },
+        { name: "工业协作机械臂方案", type: "工业机械臂", status: "编辑中", date: "2026-04-25" },
+        { name: "人形机器人上肢平台", type: "人形机器人", status: "待仿真", date: "2026-04-21" }
+      ]
+    };
+
+    const metrics = [
+      { label: "产业园认证企业", value: "86", trend: "较上月 +12%" },
+      { label: "机器人零部件 SKU", value: "1,248", trend: "现货占比 78%" },
+      { label: "3D 模型资源", value: "512", trend: "STEP / GLTF 全覆盖" },
+      { label: "可输出 URDF 模板", value: "206", trend: "MuJoCo 兼容 91%" },
+      { label: "今日询价单", value: "37", trend: "平均响应 2.4h" },
+      { label: "活跃机器人方案", value: "42", trend: "已验证 29 套" },
+      { label: "仿真用例", value: "58", trend: "自动化通过率 93%" },
+      { label: "可采购库存件", value: "8,620", trend: "交期风险 2 项" }
+    ];
+
+    const parts = [
+      { id: "part_001", icon: "⚙️", name: "RH-JM-17 机器人关节电机", model: "RH-JM-17", brand: "RoboHub", category: "关节电机", supplier: "RoboHub", parkCompany: true, price: 1280, stock: 126, leadTime: "3-5天", has3DModel: true, hasURDF: true, hasMuJoCo: true, hasSDK: true, parameters: { "额定扭矩": "17 N·m", "峰值扭矩": "38 N·m", "额定电压": "48V", "重量": "780g", "协议": "CAN / EtherCAT", "SDK": "C++ / Python" }, alternatives: ["part_013", "part_014"] },
+      { id: "part_002", icon: "📡", name: "RPLIDAR A2 激光雷达", model: "RPLIDAR A2", brand: "Slamtec", category: "激光雷达", supplier: "Slamtec", parkCompany: true, price: 5600, stock: 34, leadTime: "5-7天", has3DModel: true, hasURDF: true, hasMuJoCo: true, hasSDK: true, parameters: { "测距范围": "12m", "扫描频率": "10Hz", "供电": "5V", "接口": "USB", "SDK": "ROS / SDK" }, alternatives: [] },
+      { id: "part_003", icon: "📷", name: "Intel RealSense D435 深度相机", model: "D435", brand: "Intel RealSense", category: "深度相机", supplier: "Intel RealSense", parkCompany: false, price: 1899, stock: 68, leadTime: "2-3天", has3DModel: true, hasURDF: true, hasMuJoCo: true, hasSDK: true, parameters: { "深度范围": "0.2-10m", "分辨率": "1280x720", "接口": "USB3.0", "SDK": "Intel RealSense SDK 2.0" }, alternatives: [] },
+      { id: "part_004", icon: "🧭", name: "FT-6 六维力传感器", model: "FT-6", brand: "ForceTech", category: "六维力传感器", supplier: "苏州力控传感器有限公司", parkCompany: true, price: 7200, stock: 18, leadTime: "7-10天", has3DModel: true, hasURDF: false, hasMuJoCo: true, hasSDK: true, parameters: { "量程": "500N / 20N·m", "精度": "0.2% FS", "接口": "CAN", "SDK": "Python" }, alternatives: [] },
+      { id: "part_005", icon: "🧠", name: "MC-X7 运动控制器", model: "MC-X7", brand: "MotionCore", category: "运动控制器", supplier: "苏州运控智联有限公司", parkCompany: true, price: 4800, stock: 56, leadTime: "3-5天", has3DModel: false, hasURDF: true, hasMuJoCo: true, hasSDK: true, parameters: { "轴数": "8 轴", "总线": "EtherCAT / CAN", "周期": "1ms", "SDK": "C++ / Python / ROS2" }, alternatives: ["part_017"] },
+      { id: "part_006", icon: "💻", name: "EC-Box A100 边缘计算盒", model: "EC-A100", brand: "EdgeCompute", category: "边缘计算盒", supplier: "苏州智算边缘系统有限公司", parkCompany: true, price: 8600, stock: 22, leadTime: "5天", has3DModel: true, hasURDF: false, hasMuJoCo: true, hasSDK: true, parameters: { "算力": "100 TOPS", "接口": "2xGbE / USB / CAN", "功耗": "45W", "SDK": "Docker / Python" }, alternatives: [] },
+      { id: "part_007", icon: "🔋", name: "BP-48V60Ah 电池包", model: "BP-48V60", brand: "PowerNest", category: "电池包", supplier: "苏州新能源模块有限公司", parkCompany: true, price: 4200, stock: 40, leadTime: "3-4天", has3DModel: true, hasURDF: false, hasMuJoCo: true, hasSDK: false, parameters: { "容量": "60Ah", "标称电压": "48V", "续航估算": "6.5h", "重量": "14kg" }, alternatives: ["part_018"] },
+      { id: "part_008", icon: "🛡️", name: "BMS-48 智能电池管理系统", model: "BMS-48", brand: "PowerNest", category: "BMS", supplier: "苏州新能源模块有限公司", parkCompany: true, price: 980, stock: 92, leadTime: "2天", has3DModel: false, hasURDF: false, hasMuJoCo: false, hasSDK: true, parameters: { "均衡": "主动均衡", "保护": "过充/过流/过温", "接口": "CAN" }, alternatives: [] },
+      { id: "part_009", icon: "🛞", name: "WM-800 轮毂电机", model: "WM-800", brand: "WheelMotion", category: "轮毂电机", supplier: "昆山轮驱科技有限公司", parkCompany: false, price: 1650, stock: 76, leadTime: "2-4天", has3DModel: true, hasURDF: true, hasMuJoCo: true, hasSDK: false, parameters: { "额定功率": "800W", "峰值扭矩": "45N·m", "编码器": "16 bit", "电压": "48V" }, alternatives: [] },
+      { id: "part_010", icon: "🏗️", name: "大象机器人 myAGV 全向移动底盘", model: "myAGV", brand: "Elephant Robotics", category: "全向移动底盘", supplier: "Elephant Robotics", parkCompany: true, price: 3200, stock: 12, leadTime: "7天", has3DModel: true, hasURDF: true, hasMuJoCo: true, hasSDK: false, parameters: { "运动形式": "全向移动", "接口": "Wi-Fi / USB", "尺寸": "300x240x150mm", "SDK": "Python / ROS" }, alternatives: [] },
+      { id: "part_011", icon: "🎙️", name: "VA-01 语音交互模块", model: "VA-01", brand: "VoiceAI", category: "语音交互模块", supplier: "苏州声智科技有限公司", parkCompany: true, price: 1260, stock: 63, leadTime: "3天", has3DModel: false, hasURDF: false, hasMuJoCo: false, hasSDK: true, parameters: { "拾音距离": "6m", "接口": "USB / UART", "SDK": "ASR / TTS API" }, alternatives: [] },
+      { id: "part_013", icon: "⚙️", name: "RH-JM-15 机器人关节电机", model: "RH-JM-15", brand: "RoboHub", category: "关节电机", supplier: "RoboHub", parkCompany: true, price: 1120, stock: 98, leadTime: "3天", has3DModel: true, hasURDF: true, hasMuJoCo: true, hasSDK: true, parameters: { "额定扭矩": "15 N·m", "电压": "48V", "协议": "CAN" }, alternatives: [] },
+      { id: "part_014", icon: "⚙️", name: "SZ-Joint-18E 高扭矩关节模组", model: "SZ-Joint-18E", brand: "Suzhou Motion", category: "关节模组", supplier: "苏州动力模组有限公司", parkCompany: true, price: 1380, stock: 154, leadTime: "2-3天", has3DModel: true, hasURDF: true, hasMuJoCo: true, hasSDK: true, parameters: { "额定扭矩": "18 N·m", "协议": "EtherCAT" }, alternatives: [] },
+      { id: "part_017", icon: "🧠", name: "MC-X9 冗余运动控制器", model: "MC-X9", brand: "MotionCore", category: "运动控制器", supplier: "苏州运控智联有限公司", parkCompany: true, price: 6200, stock: 16, leadTime: "6天", has3DModel: false, hasURDF: true, hasMuJoCo: true, hasSDK: true, parameters: { "轴数": "12 轴", "安全": "双机热备" }, alternatives: [] },
+      { id: "part_018", icon: "🔋", name: "BP-48V72Ah 长续航电池包", model: "BP-48V72", brand: "PowerNest", category: "电池包", supplier: "苏州新能源模块有限公司", parkCompany: true, price: 4980, stock: 18, leadTime: "6天", has3DModel: true, hasURDF: false, hasMuJoCo: true, hasSDK: false, parameters: { "容量": "72Ah", "续航估算": "7.8h" }, alternatives: [] }
+    ];
+
+    const solutions = [
+      { id: "solution_001", name: "园区巡检移动机器人标准方案", scenario: "园区巡检", fit: 92, budget: 72800, leadTime: "12天", localization: "86%", stockFit: "78%", sim: "90%", reason: "优先使用产业园认证部件，兼顾尺寸约束、视觉、导航、语音和 SDK 开发能力。", requirement: "设计一款用于产业园区日常巡检的轮式具身智能机器人，要求支持激光雷达自主导航、深度相机识别、语音交互和远程任务下发，整机尺寸适合室内外混合路线与电梯通行，能够接入 MuJoCo 仿真与 Python SDK，预算控制在 8 万元以内，优先选择现货和园区认证供应商。", robotType: "轮式移动机器人", size: "900×650×1350mm", parts: ["part_002", "part_003", "part_005", "part_006", "part_007", "part_008", "part_009", "part_009", "part_010", "part_011"] },
+      { id: "solution_002", name: "工业协作机械臂集成方案", scenario: "工厂协作装配", fit: 89, budget: 96800, leadTime: "15天", localization: "81%", stockFit: "72%", sim: "88%", reason: "关节模组与力控传感器组合成熟，适合中小型协作工位部署。", requirement: "设计一套用于工厂协作装配工位的工业协作机械臂方案，要求覆盖抓取、拧紧、上下料等典型动作，具备力控感知和多关节协同控制能力，可联动视觉识别做工件定位，支持 MuJoCo 仿真验证与 Python/C++ SDK 二次开发，整体尺寸适合中小型工位布置，预算控制在 10 万元左右。", robotType: "工业协作机械臂", size: "1600×900×1800mm", parts: ["part_001", "part_001", "part_001", "part_004", "part_005", "part_006"] },
+      { id: "solution_003", name: "人形机器人上肢开发平台", scenario: "科研教学", fit: 87, budget: 128000, leadTime: "18天", localization: "79%", stockFit: "66%", sim: "94%", reason: "具备完整 URDF/MuJoCo 与多关节上肢开发基础。", requirement: "搭建一套面向科研教学的人形机器人上肢开发平台，要求包含多关节模组、力控接口、视觉感知和控制器组合，便于进行轨迹控制、双臂协同、抓取实验和算法教学，支持导出 URDF、接入 MuJoCo 仿真并配套 SDK 示例，平台尺寸适合实验室与教学桌面工位部署，强调结构开放、参数可调和二次开发友好。", robotType: "人形机器人上肢", size: "1200×800×1700mm", parts: ["part_014", "part_014", "part_014", "part_014", "part_005", "part_006", "part_004"] },
+      { id: "solution_004", name: "仓储物流 AMR 底盘方案", scenario: "仓储搬运", fit: 90, budget: 65800, leadTime: "10天", localization: "84%", stockFit: "81%", sim: "89%", reason: "轮毂电机、底盘结构和控制器供应稳定，适合批量交付。", requirement: "设计一款面向仓储物流搬运场景的 AMR 底盘方案，要求支持货架间自主通行、路径跟踪、避障绕行和任务调度接口接入，整机尺寸需适配标准仓储通道与货架转角，可兼容激光雷达导航与边缘计算盒，支持仿真先行验证，适合后续批量交付，预算控制在 7 万元以内。", robotType: "仓储物流 AMR", size: "980×720×1450mm", parts: ["part_002", "part_005", "part_006", "part_007", "part_008", "part_009", "part_009", "part_010"] }
+    ];
+
+    const scenes = [
+      { id: "scene_001", name: "苏州产业园区巡检路线", type: "园区巡检", difficulty: "中等", image: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80" },
+      { id: "scene_002", name: "工厂车间动态避障", type: "工业协作", difficulty: "较高", image: "https://images.unsplash.com/photo-1565008447742-97f6f38c985c?auto=format&fit=crop&w=600&q=80" },
+      { id: "scene_003", name: "仓储货架搬运", type: "仓储物流", difficulty: "中等", image: "https://images.unsplash.com/photo-1553413077-190dd305871c?auto=format&fit=crop&w=600&q=80" },
+      { id: "scene_004", name: "实验室操作台", type: "科研教学", difficulty: "中等", image: "https://images.unsplash.com/photo-1576086213369-97a306d36557?auto=format&fit=crop&w=600&q=80" },
+      { id: "scene_005", name: "楼宇大堂服务", type: "商业服务", difficulty: "较低", image: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=600&q=80" },
+      { id: "scene_006", name: "复杂地形通过", type: "特种作业", difficulty: "高", image: "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=600&q=80" }
+    ];
+
+    const testCases = [
+      { id: "case_001", name: "路径跟踪" },
+      { id: "case_002", name: "障碍物避让" },
+      { id: "case_003", name: "续航估算" },
+      { id: "case_004", name: "最大速度" },
+      { id: "case_005", name: "负载能力" },
+      { id: "case_006", name: "倾覆风险" },
+      { id: "case_007", name: "传感器遮挡" },
+      { id: "case_008", name: "任务完成率" }
+    ];
+
+    const companies = [
+      { name: "苏州智驱机器人科技有限公司", field: "关节模组 / 驱动", image: "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?auto=format&fit=crop&w=600&q=80" },
+      { name: "苏州感知科技股份有限公司", field: "感知系统", image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80" },
+      { name: "苏州运控智联有限公司", field: "控制系统", image: "https://images.unsplash.com/photo-1581092921461-eab62e97a780?auto=format&fit=crop&w=600&q=80" },
+      { name: "苏州新能源模块有限公司", field: "电源系统", image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80" },
+      { name: "苏州结构机器人科技有限公司", field: "结构件", image: "https://images.unsplash.com/photo-1530124566582-a618bc2615dc?auto=format&fit=crop&w=600&q=80" }
+    ];
+
+    const demandBoard = [
+      { title: "园区巡检机器人", status: "需求活跃" },
+      { title: "协作机械臂集成", status: "供需匹配中" },
+      { title: "科研开发平台", status: "已推荐方案" }
+    ];
+
+    const venueResources = [
+      { name: "具身智能联合测试场", type: "室内综合测试场", area: "2400㎡", availability: "可预约", highlight: "支持 AMR、机械臂、视觉定位联调", image: "https://images.unsplash.com/photo-1565610222536-ef125c59da2f?auto=format&fit=crop&w=600&q=80" },
+      { name: "重载物流验证通道", type: "仓储搬运路线", area: "1800㎡", availability: "本周空余 3 个时段", highlight: "含货架、坡道、窄通道、动态障碍", image: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80" },
+      { name: "机器人装调工坊", type: "装配调试车间", area: "900㎡", availability: "长期开放", highlight: "配套电气工位、ESD 区、基础量具", image: "https://images.unsplash.com/photo-1581092580497-e0d23cbdf1dc?auto=format&fit=crop&w=600&q=80" },
+      { name: "开放演示大厅", type: "路演展示空间", area: "600㎡", availability: "活动排期中", highlight: "适合客户演示、生态合作发布", image: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=600&q=80" }
+    ];
+
+    const openSourcePlans = [
+      { id: "opensource_001", name: "园区巡检移动机器人标准方案", stack: "RPLIDAR A2 + RealSense D435 + MC-X7", stage: "已开源", format: "BOM / URDF / MuJoCo / SDK", note: "适合二次开发与园区服务机器人验证", image: "https://images.unsplash.com/photo-1581092335397-9583eb92d232?auto=format&fit=crop&w=600&q=80" },
+      { id: "opensource_002", name: "工业协作机械臂集成方案", stack: "RH-JM-17 + FT-6 + MC-X7", stage: "联合维护", format: "接口协议 / 机械结构 / 控制脚本", note: "适合工位级协作装配演示", image: "https://images.unsplash.com/photo-1561144257-e32e8efc6c4f?auto=format&fit=crop&w=600&q=80" },
+      { id: "opensource_003", name: "科研教学上肢开发平台", stack: "多关节模组 + 力控 + 视觉", stage: "实验版", format: "课程案例 / 仿真模型 / 控制示例", note: "适合院校与实验室快速搭平台", image: "https://images.unsplash.com/photo-1535378917042-10a22c95931a?auto=format&fit=crop&w=600&q=80" },
+      { id: "opensource_004", name: "仓储物流 AMR 底盘方案", stack: "myAGV + 轮毂电机 + BMS", stage: "持续迭代", format: "底盘控制 / 调度接口 / 任务流", note: "适合搬运与导航底盘项目复用", image: "https://images.unsplash.com/photo-1586528116493-0c3bbf9f51f9?auto=format&fit=crop&w=600&q=80" }
+    ];
+
+    const productAssetCatalog = {
+      part_001: {
+        image: "assets/products/RH-JM-17 机器人关节电机/image.jpg",
+        manuals: []
+      },
+      part_002: {
+        image: "assets/products/Rplidar A2 激光雷达/image.png",
+        manuals: [
+          { name: "Rplidar A2 360度激光雷达", file: "assets/products/Rplidar A2 激光雷达/Rplidar a2 360度激光雷达.pdf" }
+        ]
+      },
+      part_003: {
+        image: "assets/products/Intel RealSense D435 深度相机/image.png",
+        manuals: [
+          { name: "Intel RealSense D400 系列深度相机", file: "assets/products/Intel RealSense D435 深度相机/Intel RealSense D400 系列深度相机.pdf" }
+        ]
+      },
+      part_005: {
+        image: "assets/images/part_005_generated_4x3.png",
+        manuals: []
+      },
+      part_006: {
+        image: "assets/images/part_006.png",
+        manuals: []
+      },
+      part_007: {
+        image: "assets/images/part_007_battery.png",
+        manuals: []
+      },
+      part_009: {
+        image: "assets/images/part_009.jpg",
+        manuals: []
+      },
+      part_010: {
+        image: "assets/products/大象机器人 mgAGV 全向移动底盘/image.png",
+        manuals: [
+          { name: "myAGV 产品手册", file: "assets/products/大象机器人 mgAGV 全向移动底盘/myAGV_brochure.pdf" }
+        ]
+      },
+      part_011: {
+        image: "assets/images/part_011_generated_4x3.png",
+        manuals: []
+      },
+      part_013: {
+        image: "assets/products/RH-JM-15 机器人关节电机/image.jpg",
+        manuals: []
+      },
+      part_014: {
+        image: "assets/images/part_014.jpg",
+        manuals: []
+      },
+      part_017: {
+        image: "assets/images/part_017_generated_4x3.png",
+        manuals: []
+      },
+      part_018: {
+        image: "assets/images/part_007_battery.png",
+        manuals: []
+      },
+      
+    };
+
+    function formatCurrency(value) {
+      return `¥${Number(value).toLocaleString("zh-CN")}`;
+    }
+
+    function getPart(id) {
+      return parts.find(part => part.id === id);
+    }
+
+    function renderPartVisual(part, large = false) {
+      const imageUrl = productAssetCatalog[part.id]?.image;
+      return `
+        <div class="part-visual ${large ? "large" : ""} ${imageUrl ? "has-photo" : ""}">
+          ${imageUrl ? `<img src="${imageUrl}" alt="${part.name}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='grid';">` : ""}
+          <span class="photo-fallback" style="${imageUrl ? "display:none;" : ""}">${part.icon}</span>
+        </div>
+      `;
+    }
+
+    function renderManualLinks(part, compact = false) {
+      const manuals = productAssetCatalog[part.id]?.manuals || [];
+      if (!manuals.length) return "";
+      if (compact) {
+        return `<a class="btn secondary" href="${manuals[0].file}" target="_blank" rel="noopener">产品手册</a>`;
+      }
+      return `
+        <div class="mini-list">
+          ${manuals.map(item => `
+            <div class="mini-row">
+              <span>${item.name}</span>
+              <strong><a href="${item.file}" target="_blank" rel="noopener" style="color:#8fd6ff;text-decoration:none;">打开 PDF</a></strong>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function switchPage(page, fromHistory = false) {
+      if (!fromHistory && appState.currentPage !== page) {
+        appState.pageHistory.push(appState.currentPage);
+      }
+      appState.currentPage = page;
+      document.querySelectorAll(".page").forEach(node => node.classList.remove("active"));
+      document.querySelector(`#page-${page}`).classList.add("active");
+      document.querySelectorAll(".top-nav-btn[data-nav]").forEach(node => node.classList.toggle("active", node.dataset.nav === page));
+      const appLayout = document.getElementById("appLayout");
+      if (appLayout) {
+        appLayout.classList.add("no-rightbar");
+      }
+      if (page === "editor") {
+        syncEditorCanvas();
+      }
+      closeUserDropdown();
+    }
+
+    function goBack() {
+      const previous = appState.pageHistory.pop() || "dashboard";
+      switchPage(previous, true);
+    }
+
+    function toggleUserDropdown() {
+      document.getElementById("userDropdown").classList.toggle("open");
+    }
+
+    function closeUserDropdown() {
+      const dropdown = document.getElementById("userDropdown");
+      if (dropdown) dropdown.classList.remove("open");
+    }
+
+    function renderMetrics() {
+      document.getElementById("dashboardMetrics").innerHTML = metrics.map(item => `
+        <div class="metric-card">
+          <span>${item.label}</span>
+          <strong>${item.value}</strong>
+          <span>${item.trend}</span>
+        </div>
+      `).join("");
+    }
+
+    function renderSolutionCards() {
+      document.getElementById("solutionCards").innerHTML = solutions.map(solution => `
+        <div class="part-card">
+          <div class="part-visual">🤖</div>
+          <h4>${solution.name}</h4>
+          <div class="part-meta">
+            <div><span>适用场景</span><strong>${solution.scenario}</strong></div>
+            <div><span>匹配度</span><strong>${solution.fit}%</strong></div>
+            <div><span>预算</span><strong>${formatCurrency(solution.budget)}</strong></div>
+            <div><span>交期</span><strong>${solution.leadTime}</strong></div>
+          </div>
+          <div class="toolbar" style="margin-top:14px;">
+            <button class="btn secondary" onclick="applySolution('${solution.id}')">查看方案</button>
+            <button class="btn" onclick="runAiBySolution('${solution.id}')">应用方案</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function renderMallCategories() {
+      const categories = ["全部类目", ...new Set(parts.map(item => item.category))];
+      document.getElementById("mallCategory").innerHTML = categories.map(category => `<option value="${category}">${category}</option>`).join("");
+    }
+
+    function renderMall() {
+      const search = document.getElementById("mallSearch").value.trim().toLowerCase();
+      const category = document.getElementById("mallCategory").value;
+      const stock = document.getElementById("mallStock").value;
+      const park = document.getElementById("mallPark").value;
+      const filtered = parts.filter(part => {
+        const searchMatch = !search || [part.name, part.model, part.brand, part.category, part.supplier].join(" ").toLowerCase().includes(search);
+        const categoryMatch = category === "全部类目" || part.category === category;
+        const stockMatch = stock === "all" || (stock === "instock" && part.stock >= 20) || (stock === "low" && part.stock < 20);
+        const parkMatch = park === "all" || (park === "park" && part.parkCompany);
+        return searchMatch && categoryMatch && stockMatch && parkMatch;
+      });
+
+      document.getElementById("mallGrid").innerHTML = filtered.map(part => `
+        <div class="part-card">
+          ${renderPartVisual(part)}
+          <div class="chips">
+            <span class="tag">${part.category}</span>
+            ${part.parkCompany ? '<span class="tag">产业园企业</span>' : '<span class="tag">生态供应商</span>'}
+          </div>
+          <h4>${part.name}</h4>
+          <p class="muted" style="min-height:42px;">${part.brand} · ${part.supplier}</p>
+          <div class="price">${formatCurrency(part.price)}</div>
+          <div class="part-meta" style="margin-top:12px;">
+            <div><span>库存</span><strong>${part.stock}</strong></div>
+            <div><span>交期</span><strong>${part.leadTime}</strong></div>
+            <div><span>支持</span><strong>${[part.has3DModel ? "3D" : "", part.hasURDF ? "URDF" : "", part.hasSDK ? "SDK" : ""].filter(Boolean).join(" / ") || "基础资料"}</strong></div>
+          </div>
+          <div class="toolbar" style="margin-top:14px;">
+            <button class="btn secondary" onclick="openPartDetail('${part.id}')">查看详情</button>
+            <button class="btn secondary" onclick="addToCompare('${part.id}')">加入对比</button>
+            <button class="btn" onclick="addToBom('${part.id}')">加入BOM</button>
+          </div>
+        </div>
+      `).join("") || `<div class="empty" style="grid-column:1/-1;">未找到匹配的零部件，请调整关键词或筛选条件。</div>`;
+    }
+
+    function renderDetail() {
+      const part = getPart(appState.selectedPartId) || parts[0];
+      const altParts = (part.alternatives || []).map(getPart).filter(Boolean);
+      document.getElementById("detailView").innerHTML = `
+        <div class="detail-header">
+          <button class="btn secondary back-btn" onclick="goBack()">← 返回</button>
+          <h1>${part.name}</h1>
+        </div>
+        <div class="detail-layout">
+          <div class="detail-left">
+            <div class="visual-box">
+              ${renderPartVisual(part, true)}
+            </div>
+            <div class="chips detail-tags">
+              <span class="tag brand-tag">${part.brand}</span>
+              <span class="tag">${part.category}</span>
+              ${part.parkCompany ? '<span class="tag primary-tag">苏州产业园认证企业</span>' : '<span class="tag">生态合作供应商</span>'}
+            </div>
+            <div class="detail-desc">
+              <p>该零部件具备 ${part.has3DModel ? "完整 STEP / GLTF 数模、" : ""}${part.hasURDF ? "URDF 模型、" : ""}${part.hasMuJoCo ? "MuJoCo 配置、" : ""}${part.hasSDK ? "Python / C++ SDK 接口" : "基础接线与参数资料"}，可直接进入平台装配与仿真流程。</p>
+            </div>
+            <div class="detail-actions">
+              <button class="btn primary" onclick="addToBom('${part.id}')">加入 BOM</button>
+              <button class="btn" onclick="addToCompare('${part.id}')">加入对比</button>
+              <button class="btn" onclick="showAlternatives('${part.id}')">替代料推荐</button>
+              <button class="btn" onclick="importToEditor('${part.id}')">导入编辑器</button>
+            </div>
+          </div>
+          <div class="detail-right">
+            <div class="info-card pricing-card">
+              <h3>价格与库存</h3>
+              <div class="price-table">
+                <table>
+                  <thead><tr><th>采购数量</th><th>单价</th></tr></thead>
+                  <tbody>
+                    <tr><td>1-9</td><td>${formatCurrency(part.price)}</td></tr>
+                    <tr><td>10-49</td><td>${formatCurrency(Math.round(part.price * 0.94))}</td></tr>
+                    <tr><td>50-199</td><td>${formatCurrency(Math.round(part.price * 0.88))}</td></tr>
+                    <tr><td>200+</td><td>批量询价</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="info-row">
+                <div class="info-item">
+                  <span class="info-label">库存</span>
+                  <strong>${part.stock}</strong>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">交期</span>
+                  <strong>${part.leadTime}</strong>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">样品支持</span>
+                  <strong>支持</strong>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">批量采购</span>
+                  <strong>支持 RFQ</strong>
+                </div>
+              </div>
+            </div>
+            <div class="info-card spec-card">
+              <h3>参数表</h3>
+              <div class="spec-list">
+                ${Object.entries(part.parameters).map(([key, value]) => `<div class="spec-row"><span>${key}</span><strong>${value}</strong></div>`).join("")}
+              </div>
+              <div class="compat-section">
+                <h4>兼容推荐</h4>
+                <div class="compat-list">
+                  <div class="compat-item"><span>运动控制器</span><strong>MC-X7 / MC-X9</strong></div>
+                  <div class="compat-item"><span>电源系统</span><strong>BP-48V60Ah + BMS-48</strong></div>
+                  <div class="compat-item"><span>仿真支持</span><strong>${part.hasMuJoCo ? "MuJoCo / URDF" : "资料待补充"}</strong></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="detail-section">
+          <h3>文档与资料</h3>
+          ${renderManualLinks(part)}
+        </div>
+        <div class="detail-section">
+          <h3>替代料推荐</h3>
+          ${altParts.length ? `
+            <div class="alt-table-wrap">
+              <table>
+                <thead><tr><th>型号</th><th>品牌</th><th>匹配度</th><th>替代原因</th></tr></thead>
+                <tbody>
+                  ${altParts.map((alt, index) => `<tr><td>${alt.model}</td><td>${alt.brand}</td><td>${93 - index * 4}%</td><td>${index === 0 ? "参数接近，库存更充足" : "成本更低，适合预算优先场景"}</td></tr>`).join("")}
+                </tbody>
+              </table>
+            </div>
+          ` : `<div class="empty">当前暂无可替代料，建议直接发起询价或联系平台顾问。</div>`}
+        </div>
+      `;
+    }
+
+    function ensureBomFromRecommended() {
+      if (appState.bom.length) return;
+      if (!appState.recommendedParts.length) {
+        appState.recommendedParts = [...new Set(solutions[0].parts)];
+      }
+      appState.bom = appState.recommendedParts.map(id => ({ id, qty: appState.recommendedParts.filter(item => item === id).length || 1 }))
+        .filter((item, index, arr) => arr.findIndex(entry => entry.id === item.id) === index);
+    }
+
+    function addToBom(partId) {
+      const existing = appState.bom.find(item => item.id === partId);
+      if (existing) existing.qty += 1;
+      else appState.bom.push({ id: partId, qty: 1 });
+      renderBom();
+      updateRightRail();
+      switchPage("bom");
+    }
+
+    function addToCompare(partId) {
+      if (!appState.compare.includes(partId)) appState.compare.push(partId);
+      renderCompare();
+    }
+
+    function showAlternatives(partId) {
+      const part = getPart(partId);
+      const alts = (part.alternatives || []).map(getPart).filter(Boolean);
+      openModal(`${part.name} 替代料推荐`, alts.length ? `
+        <table>
+          <thead><tr><th>型号</th><th>品牌</th><th>匹配度</th><th>交期</th><th>说明</th></tr></thead>
+          <tbody>
+            ${alts.map((alt, index) => `<tr><td>${alt.model}</td><td>${alt.brand}</td><td>${93 - index * 4}%</td><td>${alt.leadTime}</td><td>${index === 0 ? "库存更高，适合现货优先策略" : "成本更低，适合预算压缩场景"}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      ` : `<div class="empty">暂无替代料建议。</div>`);
+    }
+
+    function renderBom() {
+      ensureBomFromRecommended();
+      let total = 0;
+      let maxLead = 0;
+      let inStockCount = 0;
+      document.getElementById("bomTableBody").innerHTML = appState.bom.map(item => {
+        const part = getPart(item.id);
+        const subtotal = part.price * item.qty;
+        total += subtotal;
+        if (part.stock >= item.qty) inStockCount += 1;
+        maxLead = Math.max(maxLead, parseInt(part.leadTime, 10) || 3);
+        return `
+          <tr>
+            <td>${part.category}</td>
+            <td>${part.model}</td>
+            <td>${part.brand}<br><span class="muted">${part.supplier}</span></td>
+            <td>${Object.values(part.parameters).slice(0, 2).join(" / ")}</td>
+            <td>${item.qty}</td>
+            <td>${formatCurrency(part.price)}</td>
+            <td>${formatCurrency(subtotal)}</td>
+            <td>${part.stock}</td>
+            <td>${part.leadTime}</td>
+          </tr>
+        `;
+      }).join("");
+
+      document.getElementById("bomSummary").innerHTML = `
+        <span class="tag">BOM 条目 ${appState.bom.length}</span>
+        <span class="tag">总成本 ${formatCurrency(total)}</span>
+        <span class="tag">现货满足率 ${Math.round((inStockCount / Math.max(appState.bom.length, 1)) * 100)}%</span>
+        <span class="tag">预计整机交付 ${Math.max(maxLead, 12)} 天</span>
+      `;
+
+      const altCandidates = appState.bom.map(item => getPart(item.id)).filter(part => part.alternatives && part.alternatives.length);
+      document.getElementById("bomAlternatives").innerHTML = altCandidates.length ? altCandidates.map(part => {
+        const alt = getPart(part.alternatives[0]);
+        return `<div class="mini-row"><span>${part.model}</span><strong>${alt.model} · 库存更优</strong></div>`;
+      }).join("") : `<div class="empty">当前 BOM 无明显替代风险项。</div>`;
+
+      document.getElementById("bomCount").textContent = String(appState.bom.length);
+    }
+
+    function buildAiRecommendation(solution) {
+      const totalParts = solution.parts.reduce((acc, id) => {
+        acc[id] = (acc[id] || 0) + 1;
+        return acc;
+      }, {});
+      appState.recommendedSolutionId = solution.id;
+      appState.recommendedParts = [...solution.parts];
+      document.getElementById("aiResult").innerHTML = `
+        <div class="chips">
+          <span class="tag">方案 A</span>
+          <span class="tag">匹配度 ${solution.fit}%</span>
+          <span class="tag">国产化率 ${solution.localization}</span>
+          <span class="tag">仿真完整度 ${solution.sim}</span>
+        </div>
+        <h3 style="margin-top:14px;">${solution.name}</h3>
+        <div class="mini-list">
+          <div class="mini-row"><span>适用场景</span><strong>${solution.scenario}</strong></div>
+          <div class="mini-row"><span>预算估算</span><strong>${formatCurrency(solution.budget)}</strong></div>
+          <div class="mini-row"><span>预计交期</span><strong>${solution.leadTime}</strong></div>
+          <div class="mini-row"><span>现货满足率</span><strong>${solution.stockFit}</strong></div>
+        </div>
+        <p class="sub" style="margin-top:14px;">${solution.reason}</p>
+        <div class="spec-list">
+          ${Object.entries(totalParts).map(([id, qty]) => `<div class="spec-row"><span>${getPart(id).name}</span><strong>x${qty}</strong></div>`).join("")}
+        </div>
+      `;
+      document.getElementById("aiExplain").innerHTML = `
+        <div class="mini-list">
+          <div class="mini-row"><span>推荐原因</span><strong>优先满足预算、尺寸、MuJoCo 和 Python SDK</strong></div>
+          <div class="mini-row"><span>库存风险</span><strong>底盘结构件与增强电池包存在低库存提醒</strong></div>
+          <div class="mini-row"><span>接口关注</span><strong>深度相机 USB3.0 与边缘计算盒带宽需复核</strong></div>
+          <div class="mini-row"><span>可直接导入</span><strong>雷达、相机、控制器、底盘、轮毂、电池包</strong></div>
+          <div class="mini-row"><span>产业园来源</span><strong>${solution.localization} 供应链来自苏州产业园</strong></div>
+        </div>
+      `;
+      document.getElementById("rightScore").textContent = `${solution.fit}%`;
+      document.getElementById("rightSummary").textContent = `AI 已根据场景、预算、库存、交期和仿真资源完整度生成 ${solution.name}。`;
+      renderSdk();
+    }
+
+    function runAiRecommendation() {
+      const robotType = document.getElementById("robotType").value;
+      const scenario = document.getElementById("scenarioType").value;
+      const budget = Number(document.getElementById("budgetInput").value || 0);
+      const size = (document.getElementById("sizeInput").value || "").trim();
+      let solution = solutions.find(item => item.scenario === scenario) || solutions[0];
+      if (robotType.includes("机械臂")) solution = solutions[1];
+      if (robotType.includes("人形")) solution = solutions[2];
+      if (robotType.includes("AMR")) solution = solutions[3];
+      if (budget < 70000) solution = solutions[3];
+      if (size.includes("大型") || size.includes("1200") || size.includes("1600")) {
+        solution = { ...solution, fit: Math.max(solution.fit - 1, 84), reason: `${solution.reason} 已按较大外形尺寸约束重新校核部署空间与通行适配性。` };
+      }
+      buildAiRecommendation(solution);
+    }
+
+    function applySolutionToAiInputs(solution) {
+      const requirementField = document.getElementById("requirementText");
+      const robotTypeField = document.getElementById("robotType");
+      const scenarioField = document.getElementById("scenarioType");
+      const budgetField = document.getElementById("budgetInput");
+      const sizeField = document.getElementById("sizeInput");
+      if (requirementField) requirementField.value = solution.requirement || "";
+      if (robotTypeField && solution.robotType) robotTypeField.value = solution.robotType;
+      if (scenarioField && solution.scenario) scenarioField.value = solution.scenario;
+      if (budgetField) budgetField.value = String(solution.budget || "");
+      if (sizeField) sizeField.value = solution.size || "";
+    }
+
+    function runAiBySolution(solutionId) {
+      const solution = solutions.find(item => item.id === solutionId);
+      if (!solution) return;
+      applySolutionToAiInputs(solution);
+      buildAiRecommendation(solution);
+      switchPage("ai");
+    }
+
+    function applySolution(solutionId) {
+      const solution = solutions.find(item => item.id === solutionId);
+      openModal("方案预览", `
+        <div class="spec-list">
+          <div class="spec-row"><span>方案名称</span><strong>${solution.name}</strong></div>
+          <div class="spec-row"><span>适用场景</span><strong>${solution.scenario}</strong></div>
+          <div class="spec-row"><span>匹配度</span><strong>${solution.fit}%</strong></div>
+          <div class="spec-row"><span>预算</span><strong>${formatCurrency(solution.budget)}</strong></div>
+          <div class="spec-row"><span>交期</span><strong>${solution.leadTime}</strong></div>
+          <div class="spec-row"><span>推荐理由</span><strong>${solution.reason}</strong></div>
+        </div>
+        <p class="sub" style="margin-top:14px;">${solution.requirement || ""}</p>
+      `);
+    }
+
+    function viewOpenSourceSolution(solutionId) {
+      const solution = openSourcePlans.find(item => item.id === solutionId);
+      openModal("开源方案详情", `
+        <div class="spec-list">
+          <div class="spec-row"><span>方案名称</span><strong>${solution.name}</strong></div>
+          <div class="spec-row"><span>核心组合</span><strong>${solution.stack}</strong></div>
+          <div class="spec-row"><span>开源阶段</span><strong>${solution.stage}</strong></div>
+          <div class="spec-row"><span>交付形式</span><strong>${solution.format}</strong></div>
+          <div class="spec-row"><span>适用场景</span><strong>${solution.note}</strong></div>
+        </div>
+      `);
+    }
+
+    function applyOpenSourceSolution(solutionId) {
+      const solution = openSourcePlans.find(item => item.id === solutionId);
+      const solutionMap = {
+        "opensource_001": "solution_001",
+        "opensource_002": "solution_002",
+        "opensource_003": "solution_003",
+        "opensource_004": "solution_004"
+      };
+      const mappedSolutionId = solutionMap[solutionId];
+      if (mappedSolutionId) {
+        runAiBySolution(mappedSolutionId);
+      } else {
+        showToast(`已应用开源方案: ${solution.name}`);
+      }
+    }
+
+    function openPartDetail(partId) {
+      appState.selectedPartId = partId;
+      renderDetail();
+      switchPage("detail");
+    }
+
+    function renderCompare() {
+      document.getElementById("compareList").innerHTML = appState.compare.length ? appState.compare.map(id => {
+        const part = getPart(id);
+        return `<div class="mini-row"><span>${part.model}</span><strong>${formatCurrency(part.price)} / 库存 ${part.stock}</strong></div>`;
+      }).join("") : `<div class="empty">尚未加入对比</div>`;
+    }
+
+    function getEditorGraphConfig() {
+      return [
+        { graphId: "base", partId: "part_010", label: "底盘结构", x: 430, y: 320, width: 140, height: 54 },
+        { graphId: "controller", partId: "part_005", label: "运动控制器", x: 430, y: 110, width: 140, height: 54 },
+        { graphId: "lidar", partId: "part_002", label: "激光雷达", x: 430, y: 45, width: 132, height: 52 },
+        { graphId: "camera", partId: "part_003", label: "深度相机", x: 620, y: 110, width: 132, height: 52 },
+        { graphId: "battery", partId: "part_007", label: "电池包", x: 220, y: 220, width: 120, height: 52 },
+        { graphId: "wheel-left", partId: "part_009", label: "左轮毂电机", x: 220, y: 400, width: 144, height: 52 },
+        { graphId: "wheel-right", partId: "part_009", label: "右轮毂电机", x: 620, y: 400, width: 144, height: 52 },
+        { graphId: "voice", partId: "part_011", label: "语音模块", x: 620, y: 220, width: 120, height: 52 }
+      ].filter(item => appState.editorParts.includes(item.partId));
+    }
+
+    function getEditorGraphData() {
+      const nodes = getEditorGraphConfig().map(item => ({
+        id: item.graphId,
+        type: "rect",
+        x: item.x,
+        y: item.y,
+        text: item.label,
+        properties: {
+          partId: item.partId
+        }
+      }));
+      const nodeIds = new Set(nodes.map(node => node.id));
+      const edges = [
+        { id: "edge-lidar-controller", type: "polyline", sourceNodeId: "lidar", targetNodeId: "controller", text: "感知接入" },
+        { id: "edge-camera-controller", type: "polyline", sourceNodeId: "camera", targetNodeId: "controller", text: "视觉接入" },
+        { id: "edge-voice-controller", type: "polyline", sourceNodeId: "voice", targetNodeId: "controller", text: "语音链路" },
+        { id: "edge-battery-base", type: "polyline", sourceNodeId: "battery", targetNodeId: "base", text: "主电源" },
+        { id: "edge-controller-base", type: "polyline", sourceNodeId: "controller", targetNodeId: "base", text: "控制总线" },
+        { id: "edge-base-wheel-left", type: "polyline", sourceNodeId: "base", targetNodeId: "wheel-left", text: "左驱动" },
+        { id: "edge-base-wheel-right", type: "polyline", sourceNodeId: "base", targetNodeId: "wheel-right", text: "右驱动" }
+      ].filter(edge => nodeIds.has(edge.sourceNodeId) && nodeIds.has(edge.targetNodeId));
+      return { nodes, edges };
+    }
+
+    function persistEditorGraph() {
+      if (!appState.logicflow) return;
+      appState.editorGraphData = appState.logicflow.getGraphRawData();
+    }
+
+    function initLogicFlow() {
+      const canvas = document.getElementById("editorCanvas");
+      if (!canvas || appState.logicflow || !window.Core || !window.Core.LogicFlow) return;
+      const suppressDoubleTrigger = event => {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+      };
+      canvas.addEventListener("dblclick", suppressDoubleTrigger, true);
+      canvas.addEventListener("gesturestart", suppressDoubleTrigger, true);
+      const lf = new window.Core.LogicFlow({
+        container: canvas,
+        grid: false,
+        keyboard: { enabled: false },
+        stopMoveGraph: true,
+        stopScrollGraph: true,
+        stopZoomGraph: true,
+        adjustEdge: true,
+        background: false
+      });
+      lf.updateEditConfig({
+        stopMoveGraph: true,
+        stopZoomGraph: true,
+        adjustEdge: true,
+        edgeTextEdit: false,
+        nodeTextEdit: false
+      });
+      lf.setDefaultEdgeType("polyline");
+      lf.setTheme({
+        rect: {
+          radius: 14,
+          stroke: "#33b7ff",
+          strokeWidth: 1.2,
+          fill: "#132440"
+        },
+        nodeText: {
+          color: "#eaf3ff",
+          fontSize: 14
+        },
+        polyline: {
+          stroke: "#1ee0b3",
+          strokeWidth: 2
+        },
+        edgeText: {
+          color: "#91a8c7",
+          fontSize: 12,
+          background: {
+            fill: "#0f1c31"
+          }
+        },
+        anchor: {
+          fill: "#33b7ff",
+          stroke: "#33b7ff"
+        }
+      });
+      lf.on("node:dblclick", ({ e }) => {
+        e?.preventDefault?.();
+        e?.stopPropagation?.();
+      });
+      lf.on("edge:dblclick", ({ e }) => {
+        e?.preventDefault?.();
+        e?.stopPropagation?.();
+      });
+      lf.on("node:click", ({ data }) => {
+        appState.selectedEditorEdgeId = "";
+        selectEditorNode(data.properties.partId);
+      });
+      lf.on("node:mouseup", persistEditorGraph);
+      lf.on("edge:add", ({ data }) => {
+        appState.selectedEditorEdgeId = data.id || "";
+        persistEditorGraph();
+        document.getElementById("editorLog").textContent = `已新建连线：${data.id}\n可继续拖动折线控制点，或按 Delete 删除选中连线。`;
+      });
+      lf.on("edge:click", ({ data }) => {
+        appState.selectedEditorEdgeId = data.id || "";
+        appState.selectedEditorNodeId = "";
+        document.getElementById("editorLog").textContent = `已选中连线：${data.text?.value || data.text || data.id}\n可点击“删除连线”或按 Delete / Backspace 删除。`;
+      });
+      lf.on("edge:mouseup", persistEditorGraph);
+      lf.on("history:change", persistEditorGraph);
+      lf.on("blank:click", () => {
+        appState.selectedEditorEdgeId = "";
+      });
+      appState.logicflow = lf;
+    }
+
+    function deleteSelectedEdge() {
+      if (!appState.logicflow || !appState.selectedEditorEdgeId) {
+        document.getElementById("editorLog").textContent = "当前未选中连线，请先点击一条连接线。";
+        return;
+      }
+      const edgeId = appState.selectedEditorEdgeId;
+      appState.logicflow.deleteEdge(edgeId);
+      appState.selectedEditorEdgeId = "";
+      persistEditorGraph();
+      document.getElementById("editorLog").textContent = `已删除连线：${edgeId}\n如需恢复，可重新导入组件或刷新当前装配图。`;
+    }
+
+    function syncEditorCanvas() {
+      const canvas = document.getElementById("editorCanvas");
+      if (!canvas) return;
+      const graph = appState.editorGraphData || getEditorGraphData();
+      const refresh = () => {
+        if (!appState.logicflow) {
+          initLogicFlow();
+        }
+        if (!appState.logicflow) return;
+        const width = canvas.clientWidth || 0;
+        const height = canvas.clientHeight || 0;
+        if (width > 0 && height > 0) {
+          appState.logicflow.resize(width, height);
+          appState.logicflow.render(graph);
+          appState.logicflow.fitView(32, 32);
+          persistEditorGraph();
+          if (appState.selectedEditorNodeId) {
+            selectEditorNode(appState.selectedEditorNodeId);
+          }
+        }
+      };
+      requestAnimationFrame(() => requestAnimationFrame(refresh));
+    }
+
+    function buildEditorNodes() {
+      if (!appState.editorParts.length) {
+        appState.editorParts = ["part_010", "part_005", "part_002", "part_003", "part_007", "part_009", "part_011"];
+      }
+      appState.editorGraphData = getEditorGraphData();
+      const graph = appState.editorGraphData;
+      syncEditorCanvas();
+      renderComponentTree();
+      document.getElementById("editorCount").textContent = String(graph.nodes.length);
+      document.getElementById("editorLog").textContent = "已使用 LogicFlow 生成机器人装配关系图，可拖动节点、从节点锚点手工新建连线，并拖动折线调整走线。";
+    }
+
+    function renderComponentTree() {
+      document.getElementById("componentTree").innerHTML = appState.editorParts.length ? appState.editorParts.map(id => {
+        const part = getPart(id);
+        return `<button class="nav-item" style="margin:0;" onclick="selectEditorNode('${id}')">${part.model}<br><span class="muted">${part.category}</span></button>`;
+      }).join("") : `<div class="empty">尚未导入组件</div>`;
+    }
+
+    function selectEditorNode(partId) {
+      appState.selectedEditorNodeId = partId;
+      appState.selectedEditorEdgeId = "";
+      const part = getPart(partId);
+      if (appState.logicflow) {
+        appState.logicflow.clearSelectElements();
+        const match = getEditorGraphConfig().find(item => item.partId === partId);
+        if (match) {
+          appState.logicflow.selectElementById(match.graphId, false);
+        }
+      }
+      document.getElementById("propertyPanel").innerHTML = `
+        <div class="mini-list">
+          <div class="mini-row"><span>组件</span><strong>${part.name}</strong></div>
+          <div class="mini-row"><span>模型</span><strong>${part.model}</strong></div>
+          <div class="mini-row"><span>接口</span><strong>${part.parameters["协议"] || part.parameters["接口"] || "标准 I/O"}</strong></div>
+          <div class="mini-row"><span>供应商</span><strong>${part.supplier}</strong></div>
+          ${Object.entries(part.parameters).map(([key, value]) => `<div class="mini-row"><span>${key}</span><strong>${value}</strong></div>`).join("")}
+        </div>
+      `;
+      document.getElementById("editorLog").textContent = `已选中组件：${part.name}\n已加载参数面板与接口映射建议。\n建议下一步：执行接口检查并生成 URDF。`;
+    }
+
+    function importToEditor(partId) {
+      if (!appState.editorParts.includes(partId)) appState.editorParts.push(partId);
+      buildEditorNodes();
+      selectEditorNode(partId);
+      switchPage("editor");
+    }
+
+    function importRecommendedToEditor() {
+      if (!appState.recommendedParts.length) runAiRecommendation();
+      appState.editorParts = [...new Set(appState.recommendedParts)];
+      buildEditorNodes();
+      selectEditorNode(appState.editorParts[0]);
+      switchPage("editor");
+    }
+
+    function renderSdk() {
+      const activeSolution = solutions.find(item => item.id === appState.recommendedSolutionId) || solutions[0];
+      const modelId = activeSolution.scenario === "园区巡检" ? "inspection_bot_v1" : "robot_dev_platform_v1";
+      document.getElementById("sdkModelId").textContent = modelId;
+      document.getElementById("sdkCodeBox").textContent = `from suzhou_robot_platform import RobotClient
+
+robot = RobotClient(
+    model_id="${modelId}",
+    sdk_profile="mujoco_ros2",
+    control_mode="velocity"
+)
+
+robot.connect()
+robot.load_scene("suzhou_industrial_park_route_a")
+robot.run_test_case("obstacle_avoidance")
+robot.export_report("simulation_report.pdf")`;
+    }
+
+    function switchDatabaseTab(tab) {
+      appState.selectedDatabaseTab = tab;
+      renderDatabase();
+    }
+
+    function renderDatabaseThumb() {
+      return `<div class="resource-thumb">1:1 Placeholder</div>`;
+    }
+
+    function renderDatabaseCards(items, type) {
+      return items.map(item => {
+        if (type === "companies") {
+          return `
+            <div class="resource-card">
+              ${renderDatabaseThumb(item)}
+              <div class="resource-body">
+                <h3>${item.name}</h3>
+                <p class="sub">${item.field}</p>
+                <div class="resource-meta">
+                  <div class="mini-row"><span>资源类型</span><strong>企业资源</strong></div>
+                  <div class="mini-row"><span>能力方向</span><strong>${item.field}</strong></div>
+                  <div class="mini-row"><span>合作状态</span><strong>可对接</strong></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        if (type === "venues") {
+          return `
+            <div class="resource-card">
+              ${renderDatabaseThumb(item)}
+              <div class="resource-body">
+                <h3>${item.name}</h3>
+                <p class="sub">${item.highlight}</p>
+                <div class="resource-meta">
+                  <div class="mini-row"><span>场地类型</span><strong>${item.type}</strong></div>
+                  <div class="mini-row"><span>面积</span><strong>${item.area}</strong></div>
+                  <div class="mini-row"><span>预约状态</span><strong>${item.availability}</strong></div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        if (type === "solutions") {
+          return `
+            <div class="resource-card">
+              ${renderDatabaseThumb(item)}
+              <div class="resource-body">
+                <h3>${item.name}</h3>
+                <p class="sub">${item.note}</p>
+                <div class="resource-meta">
+                  <div class="mini-row"><span>核心组合</span><strong>${item.stack}</strong></div>
+                  <div class="mini-row"><span>开源阶段</span><strong>${item.stage}</strong></div>
+                  <div class="mini-row"><span>交付形式</span><strong>${item.format}</strong></div>
+                </div>
+                <div class="toolbar" style="margin-top:12px;">
+                  <button class="btn secondary" onclick="viewOpenSourceSolution('${item.id}')">查看方案</button>
+                  <button class="btn" onclick="applyOpenSourceSolution('${item.id}')">应用方案</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        return `
+          <div class="resource-card">
+            ${renderDatabaseThumb(item)}
+            <div class="resource-body">
+              <h3>${item.name}</h3>
+              <p class="sub">${item.type}场景，适用于${item.difficulty}复杂度测试。</p>
+              <div class="resource-meta">
+                <div class="mini-row"><span>场景类型</span><strong>${item.type}</strong></div>
+                <div class="mini-row"><span>测试难度</span><strong>${item.difficulty}</strong></div>
+                <div class="mini-row"><span>关联用例</span><strong>${testCases.slice(0, 3).map(caseItem => caseItem.name).join(" / ")}</strong></div>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderDatabase() {
+      const tabs = [
+        { id: "companies", label: "企业资源", desc: "园区企业能力与合作入口" },
+        { id: "venues", label: "场地资源", desc: "测试场地与装调空间" },
+        { id: "solutions", label: "开源方案", desc: "开放方案资产与复用包" },
+        { id: "scenes", label: "仿真场景", desc: "可调用的仿真环境与路网" }
+      ];
+      const activeTab = appState.selectedDatabaseTab;
+      const sidebar = document.getElementById("databaseSidebar");
+      const content = document.getElementById("databaseContent");
+      if (!sidebar || !content) return;
+
+      sidebar.innerHTML = `
+        <div class="muted" style="margin-bottom:10px;">资源分栏</div>
+        ${tabs.map(tab => `
+          <button class="db-nav-btn ${tab.id === activeTab ? "active" : ""}" onclick="switchDatabaseTab('${tab.id}')">
+            ${tab.label}
+            <div class="muted" style="margin-top:4px; font-size:12px;">${tab.desc}</div>
+          </button>
+        `).join("")}
+      `;
+
+      const datasetMap = {
+        companies: {
+          title: "企业资源",
+          subtitle: "集中展示产业园内可对接企业、能力方向和合作状态，方便做供需匹配与联合交付。",
+          stats: ["认证企业 86 家", "本周可对接 24 家", "重点领域 6 类"],
+          cards: renderDatabaseCards(companies, "companies")
+        },
+        venues: {
+          title: "场地资源",
+          subtitle: "沉淀测试场、装调空间、路演区域等线下资源，支持选型后快速预约验证与展示。",
+          stats: ["核心场地 12 处", "本周可预约 7 处", "总面积 5700㎡+"],
+          cards: renderDatabaseCards(venueResources, "venues")
+        },
+        solutions: {
+          title: "开源方案",
+          subtitle: "把园区内已有的方案包、开源资产、仿真模型和 SDK 示例集中归档，便于二次复用。",
+          stats: ["开放方案 18 套", "持续维护 9 套", "可直接复用 6 套"],
+          cards: renderDatabaseCards(openSourcePlans, "solutions")
+        },
+        scenes: {
+          title: "仿真场景",
+          subtitle: "将数据库中的仿真路线、测试环境和关联用例拆分陈列，便于直接联动仿真测试中心。",
+          stats: ["场景库 6 套", "标准用例 8 项", "覆盖行业 5 类"],
+          cards: renderDatabaseCards(scenes, "scenes")
+        }
+      };
+
+      const current = datasetMap[activeTab] || datasetMap.companies;
+      content.innerHTML = `
+        <div class="db-hero">
+          <h3>${current.title}</h3>
+          <p class="sub" style="margin-bottom:10px;">${current.subtitle}</p>
+          <div class="chips">
+            ${current.stats.map(item => `<span class="tag">${item}</span>`).join("")}
+          </div>
+        </div>
+        <div class="db-card-grid">
+          ${current.cards}
+        </div>
+      `;
+    }
+
+    function renderWorkspace() {
+      document.getElementById("projectGrid").innerHTML = appState.savedProjects.map(project => `
+        <div class="project-card">
+          <h3>${project.name}</h3>
+          <div class="mini-list">
+            <div class="mini-row"><span>类型</span><strong>${project.type}</strong></div>
+            <div class="mini-row"><span>状态</span><strong>${project.status}</strong></div>
+            <div class="mini-row"><span>最近编辑</span><strong>${project.date}</strong></div>
+          </div>
+          <div class="toolbar" style="margin-top:14px;">
+            <button class="btn secondary" onclick="switchPage('editor')">编辑</button>
+            <button class="btn secondary" onclick="switchPage('simulation')">仿真</button>
+            <button class="btn secondary" onclick="switchPage('bom')">BOM表</button>
+          </div>
+        </div>
+      `).join("");
+    }
+
+    function updateRightRail() {
+      document.getElementById("rfqStatus").textContent = appState.rfqStatus;
+      document.getElementById("simTaskStatus").textContent = appState.simulation.running ? "运行中" : "待运行";
+      document.getElementById("bomCount").textContent = String(appState.bom.length);
+      document.getElementById("editorCount").textContent = String(appState.editorParts.length);
+    }
+
+    function generateQuote() {
+      ensureBomFromRecommended();
+      const total = appState.bom.reduce((sum, item) => sum + getPart(item.id).price * item.qty, 0);
+      document.getElementById("quotePreview").innerHTML = `
+        <div class="mini-list">
+          <div class="mini-row"><span>报价单号</span><strong>RFQ-20260428-018</strong></div>
+          <div class="mini-row"><span>客户场景</span><strong>${(solutions.find(item => item.id === appState.recommendedSolutionId) || solutions[0]).scenario}</strong></div>
+          <div class="mini-row"><span>整机总价</span><strong>${formatCurrency(total)}</strong></div>
+          <div class="mini-row"><span>税运说明</span><strong>含税不含现场集成</strong></div>
+          <div class="mini-row"><span>建议交期</span><strong>12-15 天</strong></div>
+        </div>
+        <p class="sub" style="margin-top:14px;">当前 BOM 中 82% 零部件为现货，系统识别到 2 个交期风险项，已自动附带替代料建议。</p>
+      `;
+    }
+
+    function sendRfq() {
+      appState.rfqStatus = "已发起，等待供应商响应";
+      updateRightRail();
+      openModal("RFQ 询价状态", `
+        <div class="mini-list">
+          <div class="mini-row"><span>询价单号</span><strong>RFQ-20260428-018</strong></div>
+          <div class="mini-row"><span>状态</span><strong>已发送至 5 家供应商</strong></div>
+          <div class="mini-row"><span>预计首轮反馈</span><strong>2 小时内</strong></div>
+          <div class="mini-row"><span>当前策略</span><strong>产业园认证企业优先</strong></div>
+        </div>
+      `);
+    }
+
+    function interfaceCheck() {
+      openModal("接口检查结果", `
+        <div class="mini-list">
+          <div class="mini-row"><span>总线兼容</span><strong class="status-good">CAN / EtherCAT 正常</strong></div>
+          <div class="mini-row"><span>视觉链路</span><strong class="status-mid">USB3.0 带宽存在风险</strong></div>
+          <div class="mini-row"><span>供电链路</span><strong class="status-good">48V 主电源匹配</strong></div>
+          <div class="mini-row"><span>建议</span><strong>将深度相机切换为千兆网版本或使用独立采集链路</strong></div>
+        </div>
+      `);
+      document.getElementById("editorLog").textContent = `接口检查完成：\n1. CAN / EtherCAT 总线匹配正常。\n2. 深度相机 USB3.0 存在带宽风险。\n3. 建议切换为 GigE 相机版本或分离采集链路。`;
+    }
+
+    function exportUrdf() {
+      const snippet = `&lt;robot name="inspection_bot_v1"&gt;
+  &lt;link name="base_link" /&gt;
+  &lt;joint name="lidar_mount" type="fixed"&gt;
+    &lt;parent link="base_link" /&gt;
+    &lt;child link="sl_16_lidar" /&gt;
+  &lt;/joint&gt;
+  &lt;joint name="camera_mount" type="fixed"&gt;
+    &lt;parent link="base_link" /&gt;
+    &lt;child link="dc_d435_camera" /&gt;
+  &lt;/joint&gt;
+&lt;/robot&gt;`;
+      openModal("URDF 输出片段", `<div class="code-box">${snippet}</div>`);
+      document.getElementById("editorLog").textContent = "已生成 URDF 结构片段，可继续输出完整机器人描述文件。";
+    }
+
+    function exportMuJoCo() {
+      const snippet = `&lt;mujoco model="inspection_bot_v1"&gt;
+  &lt;compiler angle="degree" coordinate="local"/&gt;
+  &lt;option timestep="0.002"/&gt;
+  &lt;worldbody&gt;
+    &lt;body name="base" pos="0 0 0.15"&gt;
+      &lt;geom type="box" size="0.32 0.24 0.09"/&gt;
+    &lt;/body&gt;
+  &lt;/worldbody&gt;
+&lt;/mujoco&gt;`;
+      openModal("MuJoCo 配置摘要", `<div class="code-box">${snippet}</div>`);
+      document.getElementById("editorLog").textContent = "已生成 MuJoCo 配置摘要，包含底盘主体、传感器挂载和时间步长设置。";
+    }
+
+    function saveProject() {
+      const name = (solutions.find(item => item.id === appState.recommendedSolutionId) || solutions[0]).name;
+      appState.savedProjects.unshift({ name, type: "机器人方案", status: "已保存", date: "2026-04-28" });
+      renderWorkspace();
+      document.getElementById("rightSummary").textContent = `工程 ${name} 已保存，可在个人中心继续编辑或发起仿真。`;
+      document.getElementById("editorLog").textContent = `工程保存成功：${name}\n已写入“我的工程文件”，版本快照已创建。`;
+      switchPage("projects");
+    }
+
+    function renderSelectOptions() {
+      document.getElementById("sceneSelect").innerHTML = scenes.map(item => `<option value="${item.id}">${item.name}</option>`).join("");
+      document.getElementById("caseSelect").innerHTML = testCases.map(item => `<option value="${item.id}">${item.name}</option>`).join("");
+    }
+
+    function runSimulation() {
+      if (appState.simulation.running) return;
+      appState.simulation.running = true;
+      appState.simulation.progress = 0;
+      updateRightRail();
+      const scene = scenes.find(item => item.id === document.getElementById("sceneSelect").value) || scenes[0];
+      const testCase = testCases.find(item => item.id === document.getElementById("caseSelect").value) || testCases[0];
+      document.getElementById("simStatus").textContent = `正在加载 ${scene.name} · ${testCase.name}`;
+      const timer = setInterval(() => {
+        appState.simulation.progress += 20;
+        document.getElementById("simProgressBar").style.width = `${appState.simulation.progress}%`;
+        document.getElementById("simStatus").textContent = appState.simulation.progress < 100 ? `仿真执行中：${appState.simulation.progress}%` : "仿真完成";
+        if (appState.simulation.progress >= 100) {
+          clearInterval(timer);
+          appState.simulation.running = false;
+          document.getElementById("simResult").innerHTML = `
+            <div class="mini-list">
+              <div class="mini-row"><span>任务完成率</span><strong>96%</strong></div>
+              <div class="mini-row"><span>避障成功率</span><strong>93%</strong></div>
+              <div class="mini-row"><span>平均速度</span><strong>1.2 m/s</strong></div>
+              <div class="mini-row"><span>续航估算</span><strong>6.4 小时</strong></div>
+              <div class="mini-row"><span>控制延迟</span><strong>18 ms</strong></div>
+              <div class="mini-row"><span>风险等级</span><strong class="status-good">低</strong></div>
+            </div>
+          `;
+          document.getElementById("simReport").textContent = `{
+  "scene": "${scene.name}",
+  "test_case": "${testCase.name}",
+  "status": "passed",
+  "task_completion": "96%",
+  "obstacle_avoidance": "93%",
+  "endurance_estimate": "6.4h",
+  "control_latency": "18ms"
+}`;
+          updateRightRail();
+        }
+      }, 450);
+    }
+
+    function openModal(title, bodyHtml) {
+      document.getElementById("modalTitle").textContent = title;
+      document.getElementById("modalBody").innerHTML = bodyHtml;
+      document.getElementById("modal").classList.add("open");
+    }
+
+    function closeModal() {
+      document.getElementById("modal").classList.remove("open");
+    }
+
+    function bindEvents() {
+      document.querySelectorAll(".top-nav-btn[data-nav]").forEach(item => item.addEventListener("click", () => switchPage(item.dataset.nav)));
+      document.querySelectorAll("[data-nav-target]").forEach(item => item.addEventListener("click", () => switchPage(item.dataset.navTarget)));
+      document.querySelectorAll("[data-user-nav]").forEach(item => item.addEventListener("click", () => switchPage(item.dataset.userNav)));
+      ["mallSearch", "mallCategory", "mallStock", "mallPark"].forEach(id => document.getElementById(id).addEventListener(id === "mallSearch" ? "input" : "change", renderMall));
+      document.getElementById("runAiBtn").addEventListener("click", runAiRecommendation);
+      document.getElementById("generateBomFromAiBtn").addEventListener("click", () => {
+        appState.bom = [];
+        ensureBomFromRecommended();
+        renderBom();
+        switchPage("bom");
+      });
+      document.getElementById("openEditorFromAiBtn").addEventListener("click", importRecommendedToEditor);
+      document.getElementById("generateQuoteBtn").addEventListener("click", generateQuote);
+      document.getElementById("sendRfqBtn").addEventListener("click", sendRfq);
+      document.getElementById("interfaceCheckBtn").addEventListener("click", interfaceCheck);
+      document.getElementById("exportUrdfBtn").addEventListener("click", exportUrdf);
+      document.getElementById("exportMjBtn").addEventListener("click", exportMuJoCo);
+      document.getElementById("deleteEdgeBtn").addEventListener("click", deleteSelectedEdge);
+      document.getElementById("saveProjectBtn").addEventListener("click", saveProject);
+      document.getElementById("runSimBtn").addEventListener("click", runSimulation);
+      document.getElementById("closeModalBtn").addEventListener("click", closeModal);
+      document.getElementById("modal").addEventListener("click", event => { if (event.target.id === "modal") closeModal(); });
+      document.getElementById("avatarBtn").addEventListener("click", event => {
+        event.stopPropagation();
+        toggleUserDropdown();
+      });
+      document.getElementById("userDropdown").addEventListener("click", event => event.stopPropagation());
+      document.addEventListener("click", closeUserDropdown);
+      window.addEventListener("keydown", event => {
+        if (appState.currentPage !== "editor") return;
+        if (event.key === "Delete" || event.key === "Backspace") {
+          const activeTag = document.activeElement?.tagName;
+          if (activeTag === "INPUT" || activeTag === "TEXTAREA") return;
+          if (!appState.selectedEditorEdgeId) return;
+          event.preventDefault();
+          deleteSelectedEdge();
+        }
+      });
+      window.addEventListener("resize", () => {
+        if (appState.currentPage === "editor") {
+          syncEditorCanvas();
+        }
+      });
+      document.getElementById("globalSearch").addEventListener("input", event => {
+        document.getElementById("mallSearch").value = event.target.value;
+        renderMall();
+      });
+    }
+
+    function init() {
+      renderMetrics();
+      renderSolutionCards();
+      renderMallCategories();
+      renderMall();
+      renderDetail();
+      runAiRecommendation();
+      renderBom();
+      buildEditorNodes();
+      selectEditorNode("part_010");
+      renderSelectOptions();
+      renderSdk();
+      renderDatabase();
+      renderWorkspace();
+      renderCompare();
+      updateRightRail();
+      bindEvents();
+    }
+
+    window.addToBom = addToBom;
+    window.addToCompare = addToCompare;
+    window.showAlternatives = showAlternatives;
+    window.openPartDetail = openPartDetail;
+    window.importToEditor = importToEditor;
+    window.selectEditorNode = selectEditorNode;
+    window.applySolution = applySolution;
+    window.runAiBySolution = runAiBySolution;
+    window.viewOpenSourceSolution = viewOpenSourceSolution;
+    window.applyOpenSourceSolution = applyOpenSourceSolution;
+    window.switchPage = switchPage;
+    window.switchDatabaseTab = switchDatabaseTab;
+    window.goBack = goBack;
+
+    init();
+  </script>
+</body>
+</html>
