@@ -1,0 +1,15 @@
+{
+  "id": "part_002",
+  "aliases": ["part_015"],
+  "name": "Rplidar A2 激光雷达",
+  "model": "RPLIDAR A2",
+  "brand": "Slamtec",
+  "category": "激光雷达",
+  "image": "image.png",
+  "manuals": [
+    {
+      "name": "Rplidar A2 360度激光雷达",
+      "file": "Rplidar a2 360度激光雷达.pdf"
+    }
+  ]
+}
