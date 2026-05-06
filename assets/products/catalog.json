@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "updatedAt": "2026-04-29",
+  "products": [
+    {
+      "id": "part_003",
+      "aliases": ["part_016"],
+      "name": "Intel RealSense D435 深度相机",
+      "folder": "Intel RealSense D435 深度相机",
+      "metadata": "Intel RealSense D435 深度相机/product.json"
+    },
+    {
+      "id": "part_013",
+      "name": "RH-JM-15 机器人关节电机",
+      "folder": "RH-JM-15 机器人关节电机",
+      "metadata": "RH-JM-15 机器人关节电机/product.json"
+    },
+    {
+      "id": "part_001",
+      "name": "RH-JM-17 机器人关节电机",
+      "folder": "RH-JM-17 机器人关节电机",
+      "metadata": "RH-JM-17 机器人关节电机/product.json"
+    },
+    {
+      "id": "part_002",
+      "aliases": ["part_015"],
+      "name": "Rplidar A2 激光雷达",
+      "folder": "Rplidar A2 激光雷达",
+      "metadata": "Rplidar A2 激光雷达/product.json"
+    },
+    {
+      "id": "part_010",
+      "aliases": ["part_019"],
+      "name": "大象机器人 mgAGV 全向移动底盘",
+      "folder": "大象机器人 mgAGV 全向移动底盘",
+      "metadata": "大象机器人 mgAGV 全向移动底盘/product.json"
+    }
+  ]
+}
