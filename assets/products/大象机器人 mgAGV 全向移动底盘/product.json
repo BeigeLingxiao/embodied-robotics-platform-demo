@@ -1,0 +1,15 @@
+{
+  "id": "part_010",
+  "aliases": ["part_019"],
+  "name": "大象机器人 mgAGV 全向移动底盘",
+  "model": "myAGV",
+  "brand": "Elephant Robotics",
+  "category": "底盘结构件",
+  "image": "image.png",
+  "manuals": [
+    {
+      "name": "myAGV 产品手册",
+      "file": "myAGV_brochure.pdf"
+    }
+  ]
+}
